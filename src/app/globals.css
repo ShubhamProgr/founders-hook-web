@@ -82,3 +82,19 @@ body {
 .animate-fade-up {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* CTA subtle glow to make the primary button feel premium */
+@keyframes cta-glow {
+  0% { box-shadow: 0 8px 30px rgba(197,154,99,0.09); transform: translateY(0); }
+  50% { box-shadow: 0 20px 60px rgba(197,154,99,0.12); transform: translateY(-2px); }
+  100% { box-shadow: 0 8px 30px rgba(197,154,99,0.09); transform: translateY(0); }
+}
+
+.cta-glow {
+  animation: cta-glow 3.6s ease-in-out infinite;
+}
+
+/* Slight floating motion for hero artwork */
+.float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}

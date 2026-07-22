@@ -2,26 +2,26 @@ import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-md">
-      <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg">
-          <span className="w-2.5 h-2.5 rounded-sm bg-lime shadow-limeglow rotate-45" />
-          <span>
-            Founders<span className="text-lime">Hook</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-3 font-mono text-sm">
-          <Link
-            href="/login"
-            className="text-muted hover:text-ink transition-colors px-4 py-2"
-          >
-            Log in
+    <header className="sticky top-0 z-50 bg-transparent">
+      <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-3 font-bold text-lg">
+            <div className="w-8 h-8 rounded-md bg-gradient-to-br from-[#C59A63] to-[#A855F7] flex items-center justify-center text-black font-semibold">F</div>
+            <span className="tracking-tight">Founders Hook</span>
           </Link>
-          <Link
-            href="/login?mode=signup"
-            className="bg-lime text-bg font-semibold px-4 py-2 rounded-md hover:shadow-limeglow transition-shadow"
-          >
-            Join now
+        </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm text-white/80">
+          <Link href="#" className="hover:underline">Home</Link>
+          <Link href="#" className="hover:underline">Founders</Link>
+          <Link href="#" className="hover:underline">Startups</Link>
+          <Link href="#" className="hover:underline">Community</Link>
+          <Link href="#" className="hover:underline">Resources</Link>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Link href="/onboarding" className="hidden md:inline-flex items-center gap-2 bg-[#C59A63] text-black px-4 py-2 rounded-lg font-medium shadow-sm">
+            Join the Community
           </Link>
         </div>
       </nav>
