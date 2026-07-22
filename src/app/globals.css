@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #080B14;
+  color: #EDEDF7;
+}
+
+::selection {
+  background: #A855F7;
+  color: #080B14;
+}
+
+/* Custom scrollbar — quiet, on-theme */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #080B14; }
+::-webkit-scrollbar-thumb { background: #2a2140; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #A855F7; }
+
+.noise-bg {
+  background-image: radial-gradient(circle at 20% 0%, rgba(168,85,247,0.14), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(212,255,63,0.08), transparent 40%);
+}
+
+.card-border {
+  border: 1px solid rgba(168, 85, 247, 0.18);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #D4FF3F 0%, #A855F7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes pulse-node {
+  0%, 100% { opacity: 0.55; r: 5; }
+  50% { opacity: 1; r: 7; }
+}
+
+@keyframes travel-a {
+  0% { offset-distance: 0%; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
