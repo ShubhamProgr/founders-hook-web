@@ -1,4 +1,4 @@
-import mongoose, { Schema, models, model, Document } from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
 export const PROFESSIONAL_STATUSES = [
   "College Student",
@@ -89,4 +89,5 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-export default models.User || model<IUser>("User", UserSchema);
+const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+export default User;
