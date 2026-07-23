@@ -1,53 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/mongodb";
+import { z } from "zod";
+import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
-import { signToken, AUTH_COOKIE } from "@/lib/auth";
+import { signSession, SESSION_COOKIE } from "@/lib/auth";
+
+const LoginSchema = z.object({
+  identifier: z.string().min(1, "Enter your username or email"),
+  password: z.string().min(1, "Enter your password"),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { username, password } = await req.json();
+    const body = await req.json();
+    const parsed = LoginSchema.safeParse(body);
 
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: "Username and password are required." },
-        { status: 400 }
-      );
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Enter your username/email and password" }, { status: 400 });
     }
 
-    await dbConnect();
+    const { identifier, password } = parsed.data;
+    await connectToDatabase();
 
     const user = await User.findOne({
-      $or: [{ username }, { email: username }],
+      $or: [
+        { email: identifier.toLowerCase() },
+        { username: identifier.toLowerCase() },
+      ],
     });
+
     if (!user) {
-      return NextResponse.json({ error: "Incorrect username or password." }, { status: 401 });
+      return NextResponse.json({ error: "No account found with those details" }, { status: 401 });
     }
 
-    const valid = await bcrypt.compare(password, user.password);
+    const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      return NextResponse.json({ error: "Incorrect username or password." }, { status: 401 });
+      return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
     }
 
-    const token = signToken({ userId: user._id.toString(), username: user.username });
+    const token = signSession({ userId: user._id.toString(), username: user.username });
 
     const res = NextResponse.json({
       user: {
-        id: user._id,
+        id: user._id.toString(),
+        name: user.name,
         username: user.username,
         onboardingComplete: user.onboardingComplete,
       },
     });
-    res.cookies.set(AUTH_COOKIE, token, {
+
+    res.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 30,
     });
+
     return res;
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
     return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
   }
 }

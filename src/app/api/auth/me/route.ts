@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET() {
-  const session = getSession();
-  if (!session) {
-    return NextResponse.json({ user: null }, { status: 200 });
-  }
-  await dbConnect();
-  const user = await User.findById(session.userId).select("-password");
-  return NextResponse.json({ user });
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ user: null }, { status: 200 });
+
+  return NextResponse.json({
+    user: {
+      id: user._id.toString(),
+      name: user.name,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      onboardingComplete: user.onboardingComplete,
+      professionalStatus: user.professionalStatus,
+      techFields: user.techFields,
+      expertiseLevel: user.expertiseLevel,
+      lookingFor: user.lookingFor,
+    },
+  });
 }

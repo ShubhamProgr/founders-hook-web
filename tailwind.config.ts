@@ -2,39 +2,67 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./src/app/**/*.{ts,tsx}",
-    "./src/components/**/*.{ts,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        bg: "#080B14",
-        panel: "#0F1428",
-        panel2: "#141A34",
-        purple: {
-          DEFAULT: "#A855F7",
-          glow: "#C084FC",
-          deep: "#6D28D9",
+        ink: {
+          950: "#08090b",
+          900: "#0c0d10",
+          850: "#111318",
+          800: "#161920",
+          700: "#20242c",
+          600: "#2c313b",
         },
-        lime: {
-          DEFAULT: "#D4FF3F",
-          deep: "#A6D400",
+        gold: {
+          50: "#fbf3e2",
+          100: "#f5e4bd",
+          200: "#eccd85",
+          300: "#e2b458",
+          400: "#d4a054",
+          500: "#c48f3d",
+          600: "#a97527",
+          700: "#8a5d20",
         },
-        ink: "#EDEDF7",
-        muted: "#8B90A8",
-        line: "rgba(168,85,247,0.18)",
+        mist: {
+          100: "#f5f6f7",
+          300: "#c7ccd4",
+          400: "#9aa1ac",
+          500: "#767d89",
+        },
       },
       fontFamily: {
-        display: ["var(--font-space-grotesk)", "sans-serif"],
-        body: ["var(--font-inter)", "sans-serif"],
-        mono: ["var(--font-jetbrains)", "monospace"],
-      },
-      boxShadow: {
-        glow: "0 0 40px rgba(168,85,247,0.35)",
-        limeglow: "0 0 30px rgba(212,255,63,0.35)",
+        display: ["var(--font-display)", "serif"],
+        sans: ["var(--font-sans)", "sans-serif"],
       },
       backgroundImage: {
-        "grid-fade": "radial-gradient(circle at 50% 0%, rgba(168,85,247,0.15), transparent 60%)",
+        "gold-gradient": "linear-gradient(135deg, #eccd85 0%, #d4a054 45%, #a97527 100%)",
+        "ink-radial": "radial-gradient(120% 120% at 10% 0%, #161920 0%, #0c0d10 55%, #08090b 100%)",
+      },
+      boxShadow: {
+        gold: "0 8px 30px -8px rgba(212, 160, 84, 0.45)",
+        card: "0 1px 0 rgba(255,255,255,0.04), 0 12px 30px -12px rgba(0,0,0,0.6)",
+      },
+      keyframes: {
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        floatSlow: {
+          "0%,100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+      },
+      animation: {
+        fadeUp: "fadeUp 0.7s ease forwards",
+        floatSlow: "floatSlow 6s ease-in-out infinite",
+        shimmer: "shimmer 2.5s linear infinite",
       },
     },
   },

@@ -1,29 +1,23 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const display = Playfair_Display({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-space-grotesk",
+  variable: "--font-display",
+  weight: ["500", "600", "700", "800"],
 });
 
-const inter = Inter({
+const sans = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-inter",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-jetbrains",
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Founders Hook — Where campus founders and builders meet",
+  title: "Founders Hook — The Exclusive Network for Startup Founders",
   description:
-    "Founders Hook is where college startup founders publish their ideas and students find real internship work building them.",
+    "Founders Hook is where student and early-stage startup founders publish their ideas, build teams, and connect with talent looking for internships and real startup experience.",
 };
 
 export default function RootLayout({
@@ -32,10 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body
-        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} font-body antialiased bg-bg text-ink`}
-      >
+    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+      <body className="bg-ink-950 text-mist-100 font-sans antialiased">
         {children}
       </body>
     </html>

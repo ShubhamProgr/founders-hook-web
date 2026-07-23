@@ -2,252 +2,294 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-type Question = {
-  key: "role" | "field" | "experience" | "skills" | "lookingFor" | "availability";
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  multi?: boolean;
-  options: string[];
-};
-
-const questions: Question[] = [
-  {
-    key: "role",
-    eyebrow: "01 / professional life",
-    title: "What best describes you right now?",
-    subtitle: "This shapes what your feed and matches look like.",
-    options: ["Startup founder", "Student looking for internships", "Both"],
-  },
-  {
-    key: "field",
-    eyebrow: "02 / field of technology",
-    title: "What's your primary field?",
-    subtitle: "Pick the one you spend the most time in.",
-    options: [
-      "Web Development",
-      "Mobile Development",
-      "AI / Machine Learning",
-      "Data Science",
-      "Blockchain / Web3",
-      "Cybersecurity",
-      "UI/UX Design",
-      "Product Management",
-      "DevOps / Cloud",
-      "Hardware / IoT",
-    ],
-  },
-  {
-    key: "experience",
-    eyebrow: "03 / experience level",
-    title: "How much hands-on experience do you have?",
-    subtitle: "Be honest — this helps founders set the right expectations.",
-    options: [
-      "Just starting out",
-      "Beginner (0–1 yr)",
-      "Intermediate (1–3 yrs)",
-      "Advanced (3+ yrs)",
-    ],
-  },
-  {
-    key: "skills",
-    eyebrow: "04 / expertise",
-    title: "Which skills do you bring to the table?",
-    subtitle: "Select as many as apply.",
-    multi: true,
-    options: [
-      "React / Next.js",
-      "Node.js",
-      "Python",
-      "Java / Kotlin",
-      "Swift",
-      "Figma / Design",
-      "Solidity",
-      "TensorFlow / PyTorch",
-      "AWS / GCP",
-      "SQL / NoSQL",
-      "Marketing / Growth",
-      "Business / Finance",
-    ],
-  },
-  {
-    key: "lookingFor",
-    eyebrow: "05 / goals",
-    title: "What are you hoping to find on Forge?",
-    subtitle: "Select as many as apply.",
-    multi: true,
-    options: [
-      "Internship opportunities",
-      "Co-founders",
-      "Team members to hire",
-      "Mentorship",
-      "Networking",
-      "Just exploring",
-    ],
-  },
-  {
-    key: "availability",
-    eyebrow: "06 / availability",
-    title: "How much time can you commit?",
-    subtitle: "Last one — then you're in.",
-    options: ["Full-time", "Part-time", "Weekends only", "Flexible / project-based"],
-  },
-];
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import {
+  PROFESSIONAL_STATUSES,
+  TECH_FIELDS,
+  EXPERTISE_LEVELS,
+  LOOKING_FOR_OPTIONS,
+} from "@/models/User";
 
 type Answers = {
-  role: string;
-  field: string;
-  experience: string;
-  skills: string[];
-  lookingFor: string[];
-  availability: string;
+  professionalStatus: string;
+  techFields: string[];
+  expertiseLevel: string;
+  lookingFor: string;
+  college: string;
+  bio: string;
 };
 
-const emptyAnswers: Answers = {
-  role: "",
-  field: "",
-  experience: "",
-  skills: [],
-  lookingFor: [],
-  availability: "",
-};
+const STEPS = [
+  "professionalStatus",
+  "techFields",
+  "expertiseLevel",
+  "lookingFor",
+  "profile",
+] as const;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answers>(emptyAnswers);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [answers, setAnswers] = useState<Answers>({
+    professionalStatus: "",
+    techFields: [],
+    expertiseLevel: "",
+    lookingFor: "",
+    college: "",
+    bio: "",
+  });
 
-  const q = questions[step];
-  const isLast = step === questions.length - 1;
-  const currentValue = answers[q.key];
-  const hasAnswer = q.multi
-    ? (currentValue as string[]).length > 0
-    : (currentValue as string).length > 0;
+  const current = STEPS[step];
+  const progress = ((step + 1) / STEPS.length) * 100;
 
-  function toggleOption(option: string) {
-    setAnswers((prev) => {
-      if (q.multi) {
-        const list = prev[q.key] as string[];
-        const next = list.includes(option)
-          ? list.filter((o) => o !== option)
-          : [...list, option];
-        return { ...prev, [q.key]: next };
-      }
-      return { ...prev, [q.key]: option };
-    });
+  function canAdvance() {
+    if (current === "professionalStatus") return !!answers.professionalStatus;
+    if (current === "techFields") return answers.techFields.length > 0;
+    if (current === "expertiseLevel") return !!answers.expertiseLevel;
+    if (current === "lookingFor") return !!answers.lookingFor;
+    return true;
   }
 
-  async function handleNext() {
-    if (!isLast) {
-      setStep((s) => s + 1);
-      return;
-    }
-    setSubmitting(true);
+  function toggleTechField(field: string) {
+    setAnswers((a) => ({
+      ...a,
+      techFields: a.techFields.includes(field)
+        ? a.techFields.filter((f) => f !== field)
+        : [...a.techFields, field],
+    }));
+  }
+
+  async function handleFinish() {
     setError("");
+    setLoading(true);
     try {
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(answers),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Couldn't save your answers. Try again.");
-        setSubmitting(false);
+        setError(data.error || "Something went wrong");
         return;
       }
-      router.push("/dashboard");
+      router.push("/feed");
+      router.refresh();
     } catch {
-      setError("Couldn't reach the server. Try again.");
-      setSubmitting(false);
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  function handleBack() {
-    if (step > 0) setStep((s) => s - 1);
+  function next() {
+    if (step === STEPS.length - 1) {
+      handleFinish();
+    } else {
+      setStep((s) => s + 1);
+    }
   }
 
   return (
-    <main className="min-h-screen bg-bg noise-bg flex flex-col">
-      {/* progress bar */}
-      <div className="h-1 bg-panel w-full">
-        <div
-          className="h-1 bg-lime transition-all duration-500 ease-out"
-          style={{ width: `${((step + 1) / questions.length) * 100}%` }}
-        />
-      </div>
+    <main className="relative flex min-h-screen items-center justify-center bg-ink-radial px-6 py-16">
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-gold-500/10 blur-[110px]" />
 
-      <div className="flex-1 flex items-center justify-center px-6 py-16">
-        <div key={step} className="w-full max-w-2xl animate-fade-up">
-          <div className="font-mono text-xs text-lime tracking-wide mb-3">
-            {q.eyebrow}
+      <div className="relative z-10 w-full max-w-xl">
+        <div className="mb-8">
+          <div className="mb-2 flex justify-between text-xs text-mist-500">
+            <span>
+              Step {step + 1} of {STEPS.length}
+            </span>
+            <span>{Math.round(progress)}%</span>
           </div>
-          <h1 className="font-display font-bold text-3xl sm:text-4xl mb-2">
-            {q.title}
-          </h1>
-          <p className="text-muted mb-8">{q.subtitle}</p>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <motion.div
+              className="h-full bg-gold-gradient"
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+        </div>
 
-          <div className="grid sm:grid-cols-2 gap-3">
-            {q.options.map((option) => {
-              const selected = q.multi
-                ? (currentValue as string[]).includes(option)
-                : currentValue === option;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => toggleOption(option)}
-                  className={`text-left px-5 py-4 rounded-xl border transition-all font-display font-medium ${
-                    selected
-                      ? "border-lime bg-lime/10 text-ink shadow-limeglow"
-                      : "border-line bg-panel text-muted hover:border-purple/50 hover:text-ink"
-                  }`}
+        <div className="rounded-3xl border border-white/10 bg-ink-900/80 p-8 shadow-card backdrop-blur-xl sm:p-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.3 }}
+            >
+              {current === "professionalStatus" && (
+                <QuestionBlock
+                  title="What best describes you right now?"
+                  subtitle="This helps us tailor your feed."
                 >
-                  <span className="flex items-center justify-between gap-2">
-                    {option}
-                    <span
-                      className={`w-4 h-4 rounded-full border flex-shrink-0 ${
-                        selected ? "bg-lime border-lime" : "border-muted/40"
-                      }`}
+                  <OptionGrid
+                    options={[...PROFESSIONAL_STATUSES]}
+                    selected={[answers.professionalStatus]}
+                    onToggle={(v) =>
+                      setAnswers((a) => ({ ...a, professionalStatus: v }))
+                    }
+                  />
+                </QuestionBlock>
+              )}
+
+              {current === "techFields" && (
+                <QuestionBlock
+                  title="Which fields of technology interest you?"
+                  subtitle="Pick as many as apply."
+                >
+                  <OptionGrid
+                    options={[...TECH_FIELDS]}
+                    selected={answers.techFields}
+                    multi
+                    onToggle={toggleTechField}
+                  />
+                </QuestionBlock>
+              )}
+
+              {current === "expertiseLevel" && (
+                <QuestionBlock
+                  title="How would you rate your expertise?"
+                  subtitle="Be honest — there's no wrong answer."
+                >
+                  <OptionGrid
+                    options={[...EXPERTISE_LEVELS]}
+                    selected={[answers.expertiseLevel]}
+                    onToggle={(v) => setAnswers((a) => ({ ...a, expertiseLevel: v }))}
+                  />
+                </QuestionBlock>
+              )}
+
+              {current === "lookingFor" && (
+                <QuestionBlock
+                  title="What brings you to Founders Hook?"
+                  subtitle="We'll surface the right people and startups."
+                >
+                  <OptionGrid
+                    options={[...LOOKING_FOR_OPTIONS]}
+                    selected={[answers.lookingFor]}
+                    onToggle={(v) => setAnswers((a) => ({ ...a, lookingFor: v }))}
+                  />
+                </QuestionBlock>
+              )}
+
+              {current === "profile" && (
+                <QuestionBlock
+                  title="Almost done — a little about you"
+                  subtitle="Optional, but it helps others recognize you."
+                >
+                  <div className="space-y-4">
+                    <input
+                      value={answers.college}
+                      onChange={(e) =>
+                        setAnswers((a) => ({ ...a, college: e.target.value }))
+                      }
+                      placeholder="College / University (optional)"
+                      className="field-input"
                     />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                    <textarea
+                      value={answers.bio}
+                      onChange={(e) =>
+                        setAnswers((a) => ({ ...a, bio: e.target.value }))
+                      }
+                      placeholder="A one-line bio (optional)"
+                      rows={3}
+                      maxLength={280}
+                      className="field-input resize-none"
+                    />
+                  </div>
+                </QuestionBlock>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {error && (
-            <p className="text-sm text-red-400 font-mono bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mt-6">
+            <p className="mt-5 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-300">
               {error}
             </p>
           )}
 
-          <div className="flex items-center justify-between mt-10">
+          <div className="mt-9 flex items-center justify-between">
             <button
-              type="button"
-              onClick={handleBack}
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={step === 0}
-              className="font-mono text-sm text-muted hover:text-ink transition-colors disabled:opacity-0"
+              className="inline-flex items-center gap-1.5 text-sm text-mist-400 transition-colors hover:text-white disabled:opacity-0"
             >
-              ← Back
+              <ArrowLeft size={15} /> Back
             </button>
-            <span className="font-mono text-xs text-muted">
-              {step + 1} / {questions.length}
-            </span>
+
             <button
-              type="button"
-              onClick={handleNext}
-              disabled={!hasAnswer || submitting}
-              className="bg-purple hover:bg-purple-glow disabled:opacity-40 disabled:hover:bg-purple text-white font-display font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-glow"
+              onClick={next}
+              disabled={!canAdvance() || loading}
+              className="btn-gold disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {submitting ? "Saving…" : isLast ? "Finish" : "Next →"}
+              {step === STEPS.length - 1 ? (loading ? "Saving…" : "Finish") : "Continue"}
+              {step === STEPS.length - 1 ? <Check size={16} /> : <ArrowRight size={16} />}
             </button>
           </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function QuestionBlock({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl font-semibold text-white">{title}</h2>
+      {subtitle && <p className="mt-1.5 text-sm text-mist-400">{subtitle}</p>}
+      <div className="mt-6">{children}</div>
+    </div>
+  );
+}
+
+function OptionGrid({
+  options,
+  selected,
+  onToggle,
+  multi = false,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (value: string) => void;
+  multi?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {options.map((opt) => {
+        const isActive = selected.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onToggle(opt)}
+            className={`chip justify-start text-left ${isActive ? "chip-active" : ""}`}
+          >
+            <span className="flex w-full items-center justify-between">
+              {opt}
+              {isActive && <Check size={15} className="text-gold-300" />}
+            </span>
+          </button>
+        );
+      })}
+      {multi && (
+        <p className="col-span-full mt-1 text-xs text-mist-500">
+          {selected.length} selected
+        </p>
+      )}
+    </div>
   );
 }

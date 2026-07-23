@@ -5,31 +5,39 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, User } from "lucide-react";
+import { ArrowRight, AtSign, Lock, Mail, User } from "lucide-react";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function update(key: keyof typeof form, value: string) {
+    setForm((f) => ({ ...f, [key]: value }));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier, password }),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Couldn't log you in");
+        setError(data.error || "Couldn't create your account");
         return;
       }
-      router.push(data.user.onboardingComplete ? "/feed" : "/onboarding");
+      router.push("/onboarding");
       router.refresh();
     } catch {
       setError("Network error. Please try again.");
@@ -42,7 +50,7 @@ export default function LoginPage() {
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-radial px-6 py-16">
       <div className="absolute inset-0">
         <Image
-          src="https://picsum.photos/seed/foundershook-auth/1800/1200"
+          src="https://picsum.photos/seed/foundershook-auth2/1800/1200"
           alt=""
           fill
           className="object-cover opacity-20"
@@ -66,40 +74,68 @@ export default function LoginPage() {
           </span>
         </Link>
 
-        <h1 className="font-display text-2xl font-semibold text-white">Welcome back</h1>
+        <h1 className="font-display text-2xl font-semibold text-white">
+          Join the community
+        </h1>
         <p className="mt-1.5 text-sm text-mist-400">
-          Log in to keep building with your network.
+          Create your account — next we&apos;ll get to know you a little.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-mist-400">
-              Username or email
-            </label>
+            <label className="mb-1.5 block text-xs font-medium text-mist-400">Full name</label>
             <div className="relative">
               <User size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500" />
               <input
                 required
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="yourname or you@college.edu"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+                placeholder="Shivang Verma"
                 className="field-input pl-11"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-mist-400">
-              Password
-            </label>
+            <label className="mb-1.5 block text-xs font-medium text-mist-400">Username</label>
+            <div className="relative">
+              <AtSign size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500" />
+              <input
+                required
+                value={form.username}
+                onChange={(e) => update("username", e.target.value.replace(/\s/g, ""))}
+                placeholder="shivangv"
+                className="field-input pl-11"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-mist-400">Email</label>
+            <div className="relative">
+              <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500" />
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                placeholder="you@college.edu"
+                className="field-input pl-11"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-mist-400">Password</label>
             <div className="relative">
               <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-mist-500" />
               <input
                 required
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                minLength={6}
+                value={form.password}
+                onChange={(e) => update("password", e.target.value)}
+                placeholder="At least 6 characters"
                 className="field-input pl-11"
               />
             </div>
@@ -112,15 +148,15 @@ export default function LoginPage() {
           )}
 
           <button type="submit" disabled={loading} className="btn-gold w-full justify-center disabled:opacity-60">
-            {loading ? "Logging in…" : "Log in"}
+            {loading ? "Creating account…" : "Continue"}
             {!loading && <ArrowRight size={16} />}
           </button>
         </form>
 
         <p className="mt-7 text-center text-sm text-mist-400">
-          New to Founders Hook?{" "}
-          <Link href="/signup" className="font-medium text-gold-300 hover:text-gold-200">
-            Create an account
+          Already a member?{" "}
+          <Link href="/login" className="font-medium text-gold-300 hover:text-gold-200">
+            Log in
           </Link>
         </p>
       </motion.div>
