@@ -1,4 +1,4 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, models, model, Document } from "mongoose";
 
 export const PROFESSIONAL_STATUSES = [
   "College Student",
@@ -36,8 +36,8 @@ export const LOOKING_FOR_OPTIONS = [
   "Just exploring the community",
 ] as const;
 
-export interface IUser {
-  _id: mongoose.Types.ObjectId;
+// OPTIMIZATION: Extending Document automatically provides _id and other standard Mongoose properties
+export interface IUser extends Document {
   name: string;
   username: string;
   email: string;
@@ -51,6 +51,7 @@ export interface IUser {
   lookingFor?: (typeof LOOKING_FOR_OPTIONS)[number];
   onboardingComplete: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const UserSchema = new Schema<IUser>(

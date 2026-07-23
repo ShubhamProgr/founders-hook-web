@@ -71,6 +71,19 @@ export async function POST(req: NextRequest) {
     return res;
   } catch (err: any) {
     console.error("Register error:", err);
-    return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
+    
+    // Check for MongoDB Validation Errors
+    if (err.name === "ValidationError") {
+      const messages = Object.values(err.errors).map((val: any) => val.message);
+      return NextResponse.json({ error: `Database Validation Error: ${messages.join(', ')}` }, { status: 400 });
+    }
+    
+    // Check for MongoDB Duplicate Key Errors (just in case the manual check missed it)
+    if (err.code === 11000) {
+      return NextResponse.json({ error: "A user with this information already exists in the database." }, { status: 400 });
+    }
+
+    // Pass the actual error message to the frontend temporarily for debugging
+    return NextResponse.json({ error: err.message || "Something went wrong. Try again." }, { status: 500 });
   }
 }
