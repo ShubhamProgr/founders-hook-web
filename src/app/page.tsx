@@ -73,12 +73,12 @@ export default function LandingPage() {
   const primaryLabel = loggedIn ? "Go to Feed" : "Join the Community";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-ink-radial">
+    <main className="relative min-h-screen w-full overflow-hidden bg-ink-radial">
       {/* ambient glow */}
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-gold-500/10 blur-[120px]" />
 
       {/* NAVBAR */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
+      <header className="relative z-20 flex w-full items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
             F
@@ -103,8 +103,8 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-6 lg:px-10">
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 shadow-card">
+      <section className="relative z-10 w-full pb-16 pt-6">
+        <div className="relative overflow-hidden border-y border-white/10 shadow-card lg:border-x">
           <div className="absolute inset-0">
             <Image
               src="https://picsum.photos/seed/foundershook-hero/1800/1100"
@@ -176,7 +176,7 @@ export default function LandingPage() {
           </div>
 
           {/* STATS BAR — pulled live from MongoDB via /api/stats */}
-          <div className="relative mx-6 mb-8 grid grid-cols-1 gap-6 rounded-2xl border border-white/10 bg-black/40 px-8 py-7 backdrop-blur sm:grid-cols-3 sm:mx-10 lg:mx-14">
+          <div className="relative mb-8 grid grid-cols-1 gap-6 border-y border-white/10 bg-black/40 px-8 py-7 backdrop-blur sm:grid-cols-3 lg:px-14">
             <StatItem icon={Users} value={stats?.founders} label="Active Founders" />
             <StatItem icon={Rocket} value={stats?.startups} label="Startups" divider />
             <StatItem icon={Briefcase} value={stats?.openRoles} label="Open Internships" />
@@ -185,8 +185,8 @@ export default function LandingPage() {
       </section>
 
       {/* FEATURES */}
-      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-24 lg:px-10">
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative z-10 w-full pb-24">
+        <div className="grid grid-cols-1 gap-px border-y border-white/10 bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, i) => (
             <motion.div
               key={f.title}
