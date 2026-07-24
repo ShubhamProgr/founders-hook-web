@@ -2,22 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { connectToDatabase } from "@/lib/mongodb";
-import User, {
-  PROFESSIONAL_STATUSES,
-  TECH_FIELDS,
-  EXPERTISE_LEVELS,
-  LOOKING_FOR_OPTIONS,
-} from "@/models/User";
+import User from "@/models/User";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth";
 
-const OnboardingSchema = z.object({
-  professionalStatus: z.enum(PROFESSIONAL_STATUSES),
-  techFields: z.array(z.enum(TECH_FIELDS)).min(1, "Pick at least one field"),
-  expertiseLevel: z.enum(EXPERTISE_LEVELS),
-  lookingFor: z.enum(LOOKING_FOR_OPTIONS),
-  college: z.string().max(120).optional(),
-  bio: z.string().max(280).optional(),
-});
+// Schema now just checks that the body is an object of key/value pairs
+const DynamicOnboardingSchema = z.record(z.string(), z.any());
 
 export async function POST(req: NextRequest) {
   const token = cookies().get(SESSION_COOKIE)?.value;
@@ -27,17 +16,19 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const parsed = OnboardingSchema.safeParse(body);
+  const parsed = DynamicOnboardingSchema.safeParse(body);
   if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message || "Please answer every question";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
   }
 
   await connectToDatabase();
 
   const updated = await User.findByIdAndUpdate(
     session.userId,
-    { ...parsed.data, onboardingComplete: true },
+    { 
+      onboardingAnswers: parsed.data, 
+      onboardingComplete: true 
+    },
     { new: true }
   );
 

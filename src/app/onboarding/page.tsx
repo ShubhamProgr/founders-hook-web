@@ -1,70 +1,98 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import {
-  PROFESSIONAL_STATUSES,
-  TECH_FIELDS,
-  EXPERTISE_LEVELS,
-  LOOKING_FOR_OPTIONS,
-} from "@/models/User";
 
-type Answers = {
-  professionalStatus: string;
-  techFields: string[];
-  expertiseLevel: string;
-  lookingFor: string;
-  college: string;
-  bio: string;
+type Question = {
+  _id: string;
+  key: string;
+  title: string;
+  subtitle?: string;
+  type: "single-choice" | "multi-choice" | "text";
+  options?: string[];
+  isRequired: boolean;
 };
-
-const STEPS = [
-  "professionalStatus",
-  "techFields",
-  "expertiseLevel",
-  "lookingFor",
-  "profile",
-] as const;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [answers, setAnswers] = useState<Answers>({
-    professionalStatus: "",
-    techFields: [],
-    expertiseLevel: "",
-    lookingFor: "",
-    college: "",
-    bio: "",
-  });
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
 
-  const current = STEPS[step];
-  const progress = ((step + 1) / STEPS.length) * 100;
+  useEffect(() => {
+    async function fetchQuestions() {
+      try {
+        const res = await fetch("/api/onboarding/questions");
+        if (!res.ok) throw new Error("Failed to load questions");
+        const data = await res.json();
+        setQuestions(data);
+      } catch (err) {
+        setError("Failed to load onboarding questions. Please refresh.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuestions();
+  }, []);
 
-  function canAdvance() {
-    if (current === "professionalStatus") return !!answers.professionalStatus;
-    if (current === "techFields") return answers.techFields.length > 0;
-    if (current === "expertiseLevel") return !!answers.expertiseLevel;
-    if (current === "lookingFor") return !!answers.lookingFor;
-    return true;
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-ink-radial">
+        <p className="text-mist-400">Loading your onboarding experience...</p>
+      </main>
+    );
   }
 
-  function toggleTechField(field: string) {
-    setAnswers((a) => ({
-      ...a,
-      techFields: a.techFields.includes(field)
-        ? a.techFields.filter((f) => f !== field)
-        : [...a.techFields, field],
-    }));
+  if (questions.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-ink-radial">
+        <p className="text-mist-400">No questions found. Please add them to your database.</p>
+      </main>
+    );
+  }
+
+  const currentQuestion = questions[step];
+  const progress = ((step + 1) / questions.length) * 100;
+
+  function canAdvance() {
+    if (!currentQuestion.isRequired) return true;
+    
+    const currentAnswer = answers[currentQuestion.key];
+    if (currentQuestion.type === "multi-choice") {
+      return Array.isArray(currentAnswer) && currentAnswer.length > 0;
+    }
+    return !!currentAnswer && String(currentAnswer).trim() !== "";
+  }
+
+  function handleToggle(value: string) {
+    if (currentQuestion.type === "single-choice") {
+      setAnswers((a) => ({ ...a, [currentQuestion.key]: value }));
+    } else if (currentQuestion.type === "multi-choice") {
+      setAnswers((a) => {
+        const currentSelected = (a[currentQuestion.key] as string[]) || [];
+        const isSelected = currentSelected.includes(value);
+        return {
+          ...a,
+          [currentQuestion.key]: isSelected
+            ? currentSelected.filter((v) => v !== value)
+            : [...currentSelected, value],
+        };
+      });
+    }
+  }
+
+  function handleTextChange(value: string) {
+    setAnswers((a) => ({ ...a, [currentQuestion.key]: value }));
   }
 
   async function handleFinish() {
     setError("");
-    setLoading(true);
+    setSubmitting(true);
     try {
       const res = await fetch("/api/onboarding", {
         method: "POST",
@@ -81,12 +109,12 @@ export default function OnboardingPage() {
     } catch {
       setError("Network error. Please try again.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
   function next() {
-    if (step === STEPS.length - 1) {
+    if (step === questions.length - 1) {
       handleFinish();
     } else {
       setStep((s) => s + 1);
@@ -101,7 +129,7 @@ export default function OnboardingPage() {
         <div className="mb-8">
           <div className="mb-2 flex justify-between text-xs text-mist-500">
             <span>
-              Step {step + 1} of {STEPS.length}
+              Step {step + 1} of {questions.length}
             </span>
             <span>{Math.round(progress)}%</span>
           </div>
@@ -117,94 +145,41 @@ export default function OnboardingPage() {
         <div className="rounded-3xl border border-white/10 bg-ink-900/80 p-8 shadow-card backdrop-blur-xl sm:p-10">
           <AnimatePresence mode="wait">
             <motion.div
-              key={current}
+              key={currentQuestion.key}
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.3 }}
             >
-              {current === "professionalStatus" && (
-                <QuestionBlock
-                  title="What best describes you right now?"
-                  subtitle="This helps us tailor your feed."
-                >
+              <QuestionBlock
+                title={currentQuestion.title}
+                subtitle={currentQuestion.subtitle}
+              >
+                {(currentQuestion.type === "single-choice" || currentQuestion.type === "multi-choice") && (
                   <OptionGrid
-                    options={[...PROFESSIONAL_STATUSES]}
-                    selected={[answers.professionalStatus]}
-                    onToggle={(v) =>
-                      setAnswers((a) => ({ ...a, professionalStatus: v }))
+                    options={currentQuestion.options || []}
+                    selected={
+                      currentQuestion.type === "multi-choice"
+                        ? answers[currentQuestion.key] || []
+                        : answers[currentQuestion.key]
+                        ? [answers[currentQuestion.key]]
+                        : []
                     }
+                    multi={currentQuestion.type === "multi-choice"}
+                    onToggle={handleToggle}
                   />
-                </QuestionBlock>
-              )}
+                )}
 
-              {current === "techFields" && (
-                <QuestionBlock
-                  title="Which fields of technology interest you?"
-                  subtitle="Pick as many as apply."
-                >
-                  <OptionGrid
-                    options={[...TECH_FIELDS]}
-                    selected={answers.techFields}
-                    multi
-                    onToggle={toggleTechField}
+                {currentQuestion.type === "text" && (
+                  <textarea
+                    value={answers[currentQuestion.key] || ""}
+                    onChange={(e) => handleTextChange(e.target.value)}
+                    placeholder="Type your answer here..."
+                    rows={4}
+                    className="field-input w-full resize-none"
                   />
-                </QuestionBlock>
-              )}
-
-              {current === "expertiseLevel" && (
-                <QuestionBlock
-                  title="How would you rate your expertise?"
-                  subtitle="Be honest — there's no wrong answer."
-                >
-                  <OptionGrid
-                    options={[...EXPERTISE_LEVELS]}
-                    selected={[answers.expertiseLevel]}
-                    onToggle={(v) => setAnswers((a) => ({ ...a, expertiseLevel: v }))}
-                  />
-                </QuestionBlock>
-              )}
-
-              {current === "lookingFor" && (
-                <QuestionBlock
-                  title="What brings you to Founders Hook?"
-                  subtitle="We'll surface the right people and startups."
-                >
-                  <OptionGrid
-                    options={[...LOOKING_FOR_OPTIONS]}
-                    selected={[answers.lookingFor]}
-                    onToggle={(v) => setAnswers((a) => ({ ...a, lookingFor: v }))}
-                  />
-                </QuestionBlock>
-              )}
-
-              {current === "profile" && (
-                <QuestionBlock
-                  title="Almost done — a little about you"
-                  subtitle="Optional, but it helps others recognize you."
-                >
-                  <div className="space-y-4">
-                    <input
-                      value={answers.college}
-                      onChange={(e) =>
-                        setAnswers((a) => ({ ...a, college: e.target.value }))
-                      }
-                      placeholder="College / University (optional)"
-                      className="field-input"
-                    />
-                    <textarea
-                      value={answers.bio}
-                      onChange={(e) =>
-                        setAnswers((a) => ({ ...a, bio: e.target.value }))
-                      }
-                      placeholder="A one-line bio (optional)"
-                      rows={3}
-                      maxLength={280}
-                      className="field-input resize-none"
-                    />
-                  </div>
-                </QuestionBlock>
-              )}
+                )}
+              </QuestionBlock>
             </motion.div>
           </AnimatePresence>
 
@@ -225,11 +200,11 @@ export default function OnboardingPage() {
 
             <button
               onClick={next}
-              disabled={!canAdvance() || loading}
+              disabled={!canAdvance() || submitting}
               className="btn-gold disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {step === STEPS.length - 1 ? (loading ? "Saving…" : "Finish") : "Continue"}
-              {step === STEPS.length - 1 ? <Check size={16} /> : <ArrowRight size={16} />}
+              {step === questions.length - 1 ? (submitting ? "Saving…" : "Finish") : "Continue"}
+              {step === questions.length - 1 ? <Check size={16} /> : <ArrowRight size={16} />}
             </button>
           </div>
         </div>
