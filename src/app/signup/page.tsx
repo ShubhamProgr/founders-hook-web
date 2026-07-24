@@ -3,12 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, AtSign, Lock, Mail, User } from "lucide-react";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -37,8 +35,11 @@ export default function SignupPage() {
         setError(data.error || "Couldn't create your account");
         return;
       }
-      router.push("/onboarding");
-      router.refresh();
+      
+      // FIX: Force a hard navigation so the browser includes the newly set cookie 
+      // in the request to the middleware.
+      window.location.href = "/onboarding";
+      
     } catch {
       setError("Network error. Please try again.");
     } finally {
