@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession, SESSION_COOKIE } from "@/lib/auth"; // Changed verifyToken to verifySession
+// Import the correct name that matches auth-edge.ts
+import { verifySession } from "@/lib/auth-edge"; 
+import { SESSION_COOKIE } from "@/lib/auth-constants"; 
 
-// Routes that require a signed-in user
 const PROTECTED = ["/onboarding", "/dashboard"];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
   if (!isProtected) return NextResponse.next();
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  // Changed verifyToken to verifySession here as well
-  const session = token ? verifySession(token) : null; 
+  
+  // Call verifySession to match the imported function
+  const session = token ? await verifySession(token) : null; 
 
   if (!session) {
     const loginUrl = new URL("/login", req.url);

@@ -1,27 +1,12 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, models } from "mongoose";
 
-export interface IQuestion extends Document {
-  key: string;         // e.g., "primaryGoal"
-  title: string;       // e.g., "What is your primary goal?"
-  subtitle?: string;
-  type: "single-choice" | "multi-choice" | "text";
-  options?: string[];  // Only used for choice types
-  order: number;       // To sort questions correctly
-  isRequired: boolean;
-}
+// The { strict: false } flag tells Mongoose to mind its own business 
+// and just fetch exactly whatever you built in the database.
+const questionSchema = new Schema({}, { 
+  strict: false, 
+  collection: 'questions' 
+});
 
-const QuestionSchema = new Schema<IQuestion>(
-  {
-    key: { type: String, required: true, unique: true },
-    title: { type: String, required: true },
-    subtitle: { type: String },
-    type: { type: String, enum: ["single-choice", "multi-choice", "text"], required: true },
-    options: [{ type: String }],
-    order: { type: Number, required: true },
-    isRequired: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
+const Question = models.Question || mongoose.model("Question", questionSchema);
 
-const Question = mongoose.models.Question || mongoose.model<IQuestion>("Question", QuestionSchema);
 export default Question;

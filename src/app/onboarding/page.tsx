@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 
+// 1. Updated Type to exactly match the MongoDB JSON we created
 type Question = {
   _id: string;
-  key: string;
-  title: string;
-  subtitle?: string;
-  type: "single-choice" | "multi-choice" | "text";
+  text: string; // Changed from 'title' to match DB
+  type: "single_choice" | "multiple_choice" | "text"; // Updated to use underscores like the DB
   options?: string[];
-  isRequired: boolean;
+  order: number;
 };
 
 export default function OnboardingPage() {
@@ -27,7 +26,8 @@ export default function OnboardingPage() {
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const res = await fetch("/api/onboarding/questions");
+        // 2. Updated to point to the correct API route we created
+        const res = await fetch("/api/questions");
         if (!res.ok) throw new Error("Failed to load questions");
         const data = await res.json();
         setQuestions(data);
@@ -60,25 +60,24 @@ export default function OnboardingPage() {
   const progress = ((step + 1) / questions.length) * 100;
 
   function canAdvance() {
-    if (!currentQuestion.isRequired) return true;
-    
-    const currentAnswer = answers[currentQuestion.key];
-    if (currentQuestion.type === "multi-choice") {
+    // 3. Using _id instead of key to track answers
+    const currentAnswer = answers[currentQuestion._id];
+    if (currentQuestion.type === "multiple_choice") {
       return Array.isArray(currentAnswer) && currentAnswer.length > 0;
     }
     return !!currentAnswer && String(currentAnswer).trim() !== "";
   }
 
   function handleToggle(value: string) {
-    if (currentQuestion.type === "single-choice") {
-      setAnswers((a) => ({ ...a, [currentQuestion.key]: value }));
-    } else if (currentQuestion.type === "multi-choice") {
+    if (currentQuestion.type === "single_choice") {
+      setAnswers((a) => ({ ...a, [currentQuestion._id]: value }));
+    } else if (currentQuestion.type === "multiple_choice") {
       setAnswers((a) => {
-        const currentSelected = (a[currentQuestion.key] as string[]) || [];
+        const currentSelected = (a[currentQuestion._id] as string[]) || [];
         const isSelected = currentSelected.includes(value);
         return {
           ...a,
-          [currentQuestion.key]: isSelected
+          [currentQuestion._id]: isSelected
             ? currentSelected.filter((v) => v !== value)
             : [...currentSelected, value],
         };
@@ -87,7 +86,7 @@ export default function OnboardingPage() {
   }
 
   function handleTextChange(value: string) {
-    setAnswers((a) => ({ ...a, [currentQuestion.key]: value }));
+    setAnswers((a) => ({ ...a, [currentQuestion._id]: value }));
   }
 
   async function handleFinish() {
@@ -145,34 +144,31 @@ export default function OnboardingPage() {
         <div className="rounded-3xl border border-white/10 bg-ink-900/80 p-8 shadow-card backdrop-blur-xl sm:p-10">
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentQuestion.key}
+              key={currentQuestion._id}
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.3 }}
             >
-              <QuestionBlock
-                title={currentQuestion.title}
-                subtitle={currentQuestion.subtitle}
-              >
-                {(currentQuestion.type === "single-choice" || currentQuestion.type === "multi-choice") && (
+              <QuestionBlock title={currentQuestion.text}>
+                {(currentQuestion.type === "single_choice" || currentQuestion.type === "multiple_choice") && (
                   <OptionGrid
                     options={currentQuestion.options || []}
                     selected={
-                      currentQuestion.type === "multi-choice"
-                        ? answers[currentQuestion.key] || []
-                        : answers[currentQuestion.key]
-                        ? [answers[currentQuestion.key]]
+                      currentQuestion.type === "multiple_choice"
+                        ? answers[currentQuestion._id] || []
+                        : answers[currentQuestion._id]
+                        ? [answers[currentQuestion._id]]
                         : []
                     }
-                    multi={currentQuestion.type === "multi-choice"}
+                    multi={currentQuestion.type === "multiple_choice"}
                     onToggle={handleToggle}
                   />
                 )}
 
                 {currentQuestion.type === "text" && (
                   <textarea
-                    value={answers[currentQuestion.key] || ""}
+                    value={answers[currentQuestion._id] || ""}
                     onChange={(e) => handleTextChange(e.target.value)}
                     placeholder="Type your answer here..."
                     rows={4}

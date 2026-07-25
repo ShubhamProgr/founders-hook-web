@@ -7,7 +7,7 @@ const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || "dev-secret-change-me"
 );
 
-export async function verifySessionEdge(token: string) {
+export async function verifySession(token: string){
   try {
     const { payload } = await jwtVerify(token, secret);
     return payload as { userId: string; username: string };
