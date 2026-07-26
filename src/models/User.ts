@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, models, model } from "mongoose";
-
+// User interface extending Mongoose Document
 export interface IUser extends Document {
   name: string;
   username: string;
