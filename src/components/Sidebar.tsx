@@ -13,8 +13,10 @@ import {
   Settings,
   ChevronDown,
   LogOut,
+  Plus,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import ProjectSetupModal from "./ProjectSetupModal"; // Ensure this path matches your file structure
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home, href: "/feed" },
@@ -33,8 +35,13 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  
+  // State for dropdown menu
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  
+  // State for your new Project Setup Modal
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -53,70 +60,90 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="hidden w-[84px] flex-col items-center border-r border-white/5 bg-ink-950/90 py-6 lg:flex xl:w-56 xl:items-stretch xl:px-4">
-      <Link href="/" className="mb-8 flex items-center gap-2 xl:px-2">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
-          F
-        </span>
-        <span className="hidden font-display text-sm font-semibold tracking-wide xl:inline">
-          FOUNDERS HOOK
-        </span>
-      </Link>
-
-      <nav className="flex flex-1 flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
-          const active = item.label === "Home" || item.label === "Feed"
-            ? pathname === "/feed"
-            : false;
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors xl:px-3 ${
-                active
-                  ? "bg-gold-400/10 text-gold-200"
-                  : "text-mist-400 hover:bg-white/5 hover:text-white"
-              }`}
-            >
-              <item.icon size={19} className="shrink-0" />
-              <span className="hidden xl:inline">{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div ref={menuRef} className="relative mt-4">
-        <button
-          onClick={() => setMenuOpen((v) => !v)}
-          className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/5"
-        >
-          <Image
-            src={user?.avatarUrl || "https://picsum.photos/seed/user/64/64"}
-            alt={user?.name || "You"}
-            width={34}
-            height={34}
-            className="rounded-full border border-white/10 object-cover"
-          />
-          <span className="hidden min-w-0 flex-1 xl:block">
-            <span className="block truncate text-sm font-medium text-white">
-              {user?.name || "Guest"}
-            </span>
-            <span className="block truncate text-xs text-mist-500">Founder</span>
+    <>
+      <aside className="hidden w-[84px] flex-col items-center border-r border-white/5 bg-ink-950/90 py-6 lg:flex xl:w-56 xl:items-stretch xl:px-4">
+        <Link href="/" className="mb-8 flex items-center gap-2 xl:px-2">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
+            F
           </span>
-          <ChevronDown size={15} className="hidden shrink-0 text-mist-500 xl:block" />
-        </button>
+          <span className="hidden font-display text-sm font-semibold tracking-wide xl:inline">
+            FOUNDERS HOOK
+          </span>
+        </Link>
 
-        {menuOpen && (
-          <div className="absolute bottom-full left-0 mb-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-ink-850 shadow-card">
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-2 px-4 py-3 text-sm text-mist-300 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <LogOut size={15} /> Log out
-            </button>
-          </div>
-        )}
-      </div>
-    </aside>
+        <nav className="flex flex-1 flex-col gap-1">
+          {NAV_ITEMS.map((item) => {
+            const active =
+              item.label === "Home" || item.label === "Feed"
+                ? pathname === "/feed"
+                : false;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors xl:px-3 ${
+                  active
+                    ? "bg-gold-400/10 text-gold-200"
+                    : "text-mist-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <item.icon size={19} className="shrink-0" />
+                <span className="hidden xl:inline">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* CREATE STARTUP BUTTON */}
+        <div className="mt-4 px-2 xl:px-0">
+          <button
+            onClick={() => setIsSetupModalOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-semibold text-black transition-all hover:bg-gray-200 active:scale-95 xl:py-2.5"
+          >
+            <Plus size={18} className="shrink-0" />
+            <span className="hidden xl:inline">Create Startup +</span>
+          </button>
+        </div>
+
+        {/* USER PROFILE SECTION */}
+        <div ref={menuRef} className="relative mt-4">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/5"
+          >
+            <Image
+              src={user?.avatarUrl || "https://picsum.photos/seed/user/64/64"}
+              alt={user?.name || "You"}
+              width={34}
+              height={34}
+              className="rounded-full border border-white/10 object-cover"
+            />
+            <span className="hidden min-w-0 flex-1 xl:block">
+              <span className="block truncate text-sm font-medium text-white">
+                {user?.name || "Guest"}
+              </span>
+              <span className="block truncate text-xs text-mist-500">Founder</span>
+            </span>
+            <ChevronDown size={15} className="hidden shrink-0 text-mist-500 xl:block" />
+          </button>
+
+          {menuOpen && (
+            <div className="absolute bottom-full left-0 mb-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-ink-850 shadow-card">
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm text-mist-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <LogOut size={15} /> Log out
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* RENDER MODAL OUTSIDE OF THE SIDEBAR FLOW */}
+      {isSetupModalOpen && (
+        <ProjectSetupModal onClose={() => setIsSetupModalOpen(false)} />
+      )}
+    </>
   );
 }

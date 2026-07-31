@@ -1,5 +1,6 @@
 "use client";
 
+import ProjectSetupModal from "@/components/ProjectSetupModal";
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -18,7 +19,6 @@ import {
 import Sidebar from "@/components/Sidebar";
 import StartupCard, { StartupDTO } from "@/components/StartupCard";
 import PostCard, { PostDTO } from "@/components/PostCard";
-import CreateStartupModal from "@/components/CreateStartupModal";
 
 type Me = {
   id: string;
@@ -40,6 +40,8 @@ export default function FeedPage() {
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [query, setQuery] = useState("");
   const [loadingStartups, setLoadingStartups] = useState(true);
+  
+  // This state now controls your new ProjectSetupModal
   const [createOpen, setCreateOpen] = useState(false);
 
   const loadStartups = useCallback(async (q?: string) => {
@@ -119,12 +121,7 @@ export default function FeedPage() {
               <h2 className="font-display text-lg font-semibold text-white">
                 Discover Impactful Startups
               </h2>
-              <button
-                onClick={() => setCreateOpen(true)}
-                className="hidden items-center gap-1 text-sm font-medium text-gold-300 hover:text-gold-200 sm:flex"
-              >
-                Publish yours <ChevronRight size={15} />
-              </button>
+              {/* Removed the empty Publish Yours button entirely from here */}
             </div>
 
             {loadingStartups ? (
@@ -179,12 +176,15 @@ export default function FeedPage() {
       {/* MOBILE / BOTTOM BAR */}
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-center gap-1 border-t border-white/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:justify-center">
         <BottomIcon icon={Home} label="Home" />
+        
+        {/* This is the + Create Startup button that triggers the state */}
         <button
           onClick={() => setCreateOpen(true)}
           className="btn-gold mx-2 !px-4 !py-2.5 text-xs"
         >
           <Plus size={15} /> Create Startup
         </button>
+        
         <BottomIcon icon={Rss} label="Feed" />
         <BottomIcon icon={Users} label="Founders" />
         <BottomIcon icon={Rocket} label="Startups" />
@@ -194,14 +194,9 @@ export default function FeedPage() {
         </button>
       </div>
 
+      {/* RENDER THE NEW PROJECT SETUP MODAL HERE */}
       {createOpen && (
-        <CreateStartupModal
-          onClose={() => setCreateOpen(false)}
-          onCreated={() => {
-            setCreateOpen(false);
-            loadStartups();
-          }}
-        />
+        <ProjectSetupModal onClose={() => setCreateOpen(false)} />
       )}
     </div>
   );
