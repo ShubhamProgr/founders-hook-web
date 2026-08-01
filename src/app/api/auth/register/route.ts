@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { connectToDatabase } from "@/lib/mongodb";
@@ -59,14 +60,22 @@ export async function POST(req: NextRequest) {
     });
 
     // 6. Generate Session Token
-    // Note: Ensure signSession is awaited if it returns a Promise in your auth.ts file
     const token = await signSession({ 
       userId: newUser._id.toString(), 
       username: newUser.username 
     });
+    
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
 
-    // 7. Construct Success Response (201 Created)
-    const response = NextResponse.json(
+    // 8. Construct Success Response (201 Created)
+    return NextResponse.json(
       {
         user: {
           id: newUser._id.toString(),
@@ -77,19 +86,6 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-
-    // 8. Set Auth Cookie for Immediate Login
-    response.cookies.set({
-      name: SESSION_COOKIE, 
-      value: token,
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    });
-
-    return response;
     
   } catch (error: any) {
     console.error("Registration Error:", error);
@@ -107,7 +103,7 @@ export async function POST(req: NextRequest) {
     if (error.code === 11000) {
       return NextResponse.json(
         { error: "A user with this email or username already exists." }, 
-        { status: 409 } // 409 Conflict is the proper status code for duplicates
+        { status: 409 }
       );
     }
 
