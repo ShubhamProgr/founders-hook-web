@@ -230,3 +230,4 @@ Error [AI_APICallError]: Your project has been denied access. Please contact sup
     }
   }
 }
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Users\shubh\.vscode\founders-hook_3\.next\dev\cache\webpack\client-development\8.pack.gz_' -> 'C:\Users\shubh\.vscode\founders-hook_3\.next\dev\cache\webpack\client-development\8.pack.gz'

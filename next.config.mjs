@@ -4,8 +4,17 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'picsum.photos',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**', // This allows all image paths from Cloudinary
       },
+      // You can keep other domains here if you have them (like picsum.photos)
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };

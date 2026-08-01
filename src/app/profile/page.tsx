@@ -1,9 +1,12 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { CalendarDays, FileText, Pencil, Sparkles, UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CalendarDays, FileText, Pencil, Sparkles, UserRound, Upload, Save, Loader2 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
-import { getCurrentUser } from "@/lib/auth";
+import { CldUploadWidget } from "next-cloudinary";
 
 function normalizeAnswers(value: unknown): Record<string, unknown> {
   if (!value) return {};
@@ -25,18 +28,75 @@ function formatAnswer(value: unknown) {
   return String(value);
 }
 
-export default async function ProfilePage() {
-  const user = await getCurrentUser();
+export default function ProfilePage() {
+  const router = useRouter();
+  
+  // State for user data and form
+  const [user, setUser] = useState<any>(null);
+  const [bio, setBio] = useState("");
+  const [profilePic, setProfilePic] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  if (!user) {
-    redirect("/login");
+  // Fetch user data on mount
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const data = await res.json();
+        if (data?.user) {
+          setUser(data.user);
+          setBio(data.user.bio || "");
+          setProfilePic(data.user.profilePic || data.user.avatarUrl || "");
+        }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchUser();
+  }, [router]);
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/profile/bio", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bio, profilePic }),
+      });
+
+      if (!res.ok) {
+        alert("Failed to update profile.");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-ink-950 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gold-400" />
+      </div>
+    );
   }
+
+  if (!user) return null;
 
   const answers = normalizeAnswers(user.onboardingAnswers);
   const answerEntries = Object.entries(answers).filter(([, value]) => {
     if (Array.isArray(value)) return value.length > 0;
     return value !== undefined && value !== null && String(value).trim() !== "";
   });
+  
   const joinedDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en", { month: "long", year: "numeric" })
     : "Recently";
@@ -44,7 +104,7 @@ export default async function ProfilePage() {
   const sidebarUser = {
     name: user.name,
     username: user.username,
-    avatarUrl: user.avatarUrl,
+    avatarUrl: profilePic || user.avatarUrl,
   };
 
   return (
@@ -52,27 +112,42 @@ export default async function ProfilePage() {
       <Sidebar user={sidebarUser} />
 
       <main className="relative min-w-0 flex-1 overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-80">
-          <Image
-            src="https://picsum.photos/seed/foundershook-profile/1800/520"
-            alt=""
-            fill
-            priority
-            className="object-cover opacity-30"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-ink-950/30 via-ink-950/85 to-ink-950" />
-        </div>
-
-        <section className="relative z-10 mx-auto max-w-6xl px-6 pb-28 pt-10 lg:px-10">
+        {/* Banner has been completely removed as requested */}
+        
+        <section className="relative z-10 mx-auto max-w-6xl px-6 pb-28 pt-16 lg:px-10">
           <div className="flex flex-col gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end md:justify-between">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end">
-              <Image
-                src={user.avatarUrl || "https://picsum.photos/seed/user/160/160"}
-                alt={user.name}
-                width={128}
-                height={128}
-                className="h-32 w-32 rounded-2xl border border-white/15 object-cover shadow-card"
-              />
+              
+              {/* Avatar & Upload Button Group */}
+              <div className="flex flex-col items-center gap-3 sm:items-start">
+                <Image
+                  src={profilePic || "https://picsum.photos/seed/user/160/160"}
+                  alt={user.name}
+                  width={128}
+                  height={128}
+                  className="h-32 w-32 rounded-2xl border border-white/15 object-cover shadow-card"
+                />
+                
+                <CldUploadWidget 
+                  uploadPreset="founders_hook_users" 
+                  onSuccess={(result) => {
+                    if (result.info && typeof result.info === 'object' && 'secure_url' in result.info) {
+                      setProfilePic(result.info.secure_url);
+                    }
+                  }}
+                >
+                  {({ open }) => (
+                    <button 
+                      type="button" 
+                      onClick={() => open()}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-gold-400 hover:text-gold-300 transition-colors"
+                    >
+                      <Upload size={14} />
+                      Change Picture
+                    </button>
+                  )}
+                </CldUploadWidget>
+              </div>
 
               <div>
                 <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-gold-400/25 bg-gold-400/10 px-3 py-1 text-xs font-semibold text-gold-200">
@@ -90,37 +165,44 @@ export default async function ProfilePage() {
 
             <Link href="/onboarding" className="btn-outline w-fit">
               <Pencil size={16} />
-              Rebuild Bio
+              Rebuild Profile
             </Link>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+            {/* Editable Bio Section */}
             <section className="rounded-2xl border border-white/10 bg-ink-900/75 p-6 shadow-card backdrop-blur">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/10 text-gold-300">
-                  <Sparkles size={19} />
-                </span>
-                <div>
-                  <h2 className="font-display text-xl font-semibold text-white">Bio</h2>
-                  <p className="text-sm text-mist-500">Generated by the AI Bio Creator</p>
+              <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/10 text-gold-300">
+                    <Sparkles size={19} />
+                  </span>
+                  <div>
+                    <h2 className="font-display text-xl font-semibold text-white">Bio</h2>
+                    <p className="text-sm text-mist-500">Tell the community about yourself</p>
+                  </div>
                 </div>
+
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                  className="btn-gold inline-flex w-fit items-center gap-2 px-4 py-2 text-sm disabled:opacity-70"
+                >
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  {isSaving ? "Saving..." : "Save Bio"}
+                </button>
               </div>
 
-              {user.bio ? (
-                <p className="whitespace-pre-wrap text-base leading-8 text-mist-100">{user.bio}</p>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-6">
-                  <p className="text-mist-300">
-                    Your generated bio will appear here after onboarding.
-                  </p>
-                  <Link href="/onboarding" className="btn-gold mt-5">
-                    <Sparkles size={16} />
-                    Create Bio
-                  </Link>
-                </div>
-              )}
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="What are you building? What's your background?"
+                rows={6}
+                className="w-full resize-y rounded-xl border border-white/10 bg-ink-950 p-4 text-base leading-relaxed text-mist-100 placeholder:text-mist-600 focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-all"
+              />
             </section>
 
+            {/* Answers Aside - Left untouched to match theme */}
             <aside className="space-y-6">
               <section className="rounded-2xl border border-white/10 bg-ink-900/75 p-6 shadow-card backdrop-blur">
                 <div className="mb-4 flex items-center gap-3">

@@ -107,7 +107,7 @@ export default function LandingPage() {
         <div className="relative overflow-hidden border-y border-white/10 shadow-card lg:border-x">
           <div className="absolute inset-0">
             <Image
-              src="https://picsum.photos/seed/foundershook-hero/1800/1100"
+              src="https://res.cloudinary.com/t7efuhnd/image/upload/v1785570893/tyler-franta-iusJ25iYu1c-unsplash_ysk7pp.jpg"
               alt="Founders collaborating in a coworking space"
               fill
               priority
