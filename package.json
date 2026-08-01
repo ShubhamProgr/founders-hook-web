@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.29",
+    "@ai-sdk/react": "^4.0.50",
+    "ai": "^7.0.47",
     "bcryptjs": "^2.4.3",
     "framer-motion": "^11.18.2",
     "jose": "^5.4.0",
@@ -16,7 +19,7 @@
     "lucide-react": "^0.383.0",
     "mongodb": "^7.5.0",
     "mongoose": "^8.4.1",
-    "next": "^14.2.35",
+    "next": "^16.2.12",
     "next-cloudinary": "^6.17.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

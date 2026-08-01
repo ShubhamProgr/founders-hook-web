@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import BioChatbot from "@/components/BioChatbot"; // Ensure you created this from the previous step
 
 // 1. Updated Type to exactly match the MongoDB JSON we created
 type Question = {
   _id: string;
-  text: string; // Changed from 'title' to match DB
-  type: "single_choice" | "multiple_choice" | "text"; // Updated to use underscores like the DB
+  text: string;
+  type: "single_choice" | "multiple_choice" | "text";
   options?: string[];
   order: number;
 };
@@ -22,11 +23,13 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  
+  // New state to control the visibility of the Gemini chatbot
+  const [showChatbot, setShowChatbot] = useState(false);
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        // 2. Updated to point to the correct API route we created
         const res = await fetch("/api/questions");
         if (!res.ok) throw new Error("Failed to load questions");
         const data = await res.json();
@@ -60,7 +63,6 @@ export default function OnboardingPage() {
   const progress = ((step + 1) / questions.length) * 100;
 
   function canAdvance() {
-    // 3. Using _id instead of key to track answers
     const currentAnswer = answers[currentQuestion._id];
     if (currentQuestion.type === "multiple_choice") {
       return Array.isArray(currentAnswer) && currentAnswer.length > 0;
@@ -101,13 +103,15 @@ export default function OnboardingPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Something went wrong");
+        setSubmitting(false);
         return;
       }
-      router.push("/feed");
-      router.refresh();
+      
+      // Instead of pushing to /feed immediately, we trigger the chatbot
+      setShowChatbot(true);
+      
     } catch {
       setError("Network error. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   }
@@ -205,6 +209,19 @@ export default function OnboardingPage() {
           </div>
         </div>
       </div>
+      
+      {/* Render the chatbot if the questionnaire is complete */}
+      {showChatbot && (
+        <BioChatbot 
+          qaData={answers} 
+          onClose={() => {
+            setShowChatbot(false);
+            // Optionally route the user to the feed when they close the bot
+            router.push("/feed");
+            router.refresh();
+          }} 
+        />
+      )}
     </main>
   );
 }

@@ -10,3 +10,13 @@ const questionSchema = new Schema({}, {
 const Question = models.Question || mongoose.model("Question", questionSchema);
 
 export default Question;
+
+// {
+//   "text": "What describes you best?",
+//   "type": "single_choice",
+//   "options": [
+//     "Option 1",
+//     "Option 2"
+//   ],
+//   "order": 2
+// }
