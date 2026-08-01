@@ -26,7 +26,9 @@ export function verifySession(token: string): SessionPayload | null {
 
 /** Reads the session cookie (server components / route handlers) and returns the logged-in user, or null. */
 export async function getCurrentUser(): Promise<IUser | null> {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  
   if (!token) return null;
 
   const payload = verifySession(token);

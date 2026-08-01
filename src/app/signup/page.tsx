@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, AtSign, Lock, Mail, User } from "lucide-react";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -36,9 +38,8 @@ export default function SignupPage() {
         return;
       }
       
-      // FIX: Force a hard navigation so the browser includes the newly set cookie 
-      // in the request to the middleware.
-      window.location.href = "/onboarding";
+      // Use Next.js router for smooth client-side navigation without a full page refresh
+      router.push("/onboarding");
       
     } catch {
       setError("Network error. Please try again.");
