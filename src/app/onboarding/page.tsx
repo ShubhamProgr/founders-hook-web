@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import BioChatbot from "@/components/BioChatbot";
 
 // 1. Updated Type to exactly match the MongoDB JSON we created
 type Question = {
@@ -23,8 +22,6 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-  
-  const [showChatbot, setShowChatbot] = useState(false);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -106,7 +103,8 @@ export default function OnboardingPage() {
         return;
       }
       
-      setShowChatbot(true);
+      router.push("/feed");
+      router.refresh();
       
     } catch {
       setError("Network error. Please try again.");
@@ -207,20 +205,6 @@ export default function OnboardingPage() {
           </div>
         </div>
       </div>
-      
-      {showChatbot && (
-        <BioChatbot 
-          qaData={questions.reduce<Record<string, string | string[]>>((acc, question) => {
-            acc[question.text] = answers[question._id];
-            return acc;
-          }, {})} 
-          onClose={() => {
-            setShowChatbot(false);
-            router.push("/profile");
-            router.refresh();
-          }} 
-        />
-      )}
     </main>
   );
 }
