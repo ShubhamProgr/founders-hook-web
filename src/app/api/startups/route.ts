@@ -48,7 +48,8 @@ const CreateStartupSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   const session = token ? verifySession(token) : null;
   if (!session) {
     return NextResponse.json({ error: "Please log in first" }, { status: 401 });

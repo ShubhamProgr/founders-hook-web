@@ -14,6 +14,7 @@ import {
   ChevronDown,
   LogOut,
   Plus,
+  UserRound,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ProjectSetupModal from "./ProjectSetupModal"; // Ensure this path matches your file structure
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { label: "Founders", icon: Users, href: "/feed" },
   { label: "Startups", icon: Rocket, href: "/feed" },
   { label: "Messages", icon: MessageSquare, href: "/feed" },
+  { label: "Profile", icon: UserRound, href: "/profile" },
   { label: "Notifications", icon: Bell, href: "/feed" },
   { label: "Settings", icon: Settings, href: "/feed" },
 ];
@@ -73,10 +75,9 @@ export default function Sidebar({
 
         <nav className="flex flex-1 flex-col gap-1">
           {NAV_ITEMS.map((item) => {
-            const active =
-              item.label === "Home" || item.label === "Feed"
-                ? pathname === "/feed"
-                : false;
+            const active = item.href === pathname || (
+              (item.label === "Home" || item.label === "Feed") && pathname === "/feed"
+            );
             return (
               <Link
                 key={item.label}
@@ -129,6 +130,12 @@ export default function Sidebar({
 
           {menuOpen && (
             <div className="absolute bottom-full left-0 mb-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-ink-850 shadow-card">
+              <Link
+                href="/profile"
+                className="flex w-full items-center gap-2 px-4 py-3 text-sm text-mist-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <UserRound size={15} /> Profile
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex w-full items-center gap-2 px-4 py-3 text-sm text-mist-300 transition-colors hover:bg-white/5 hover:text-white"

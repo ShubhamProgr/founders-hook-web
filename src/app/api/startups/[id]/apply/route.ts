@@ -13,9 +13,10 @@ const ApplySchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
   const session = token ? verifySession(token) : null;
   if (!session) {
     return NextResponse.json({ error: "Please log in first" }, { status: 401 });
@@ -28,8 +29,9 @@ export async function POST(
   }
 
   await connectToDatabase();
+  const { id } = await params;
 
-  const startup = await Startup.findById(params.id);
+  const startup = await Startup.findById(id);
   if (!startup) {
     return NextResponse.json({ error: "Startup not found" }, { status: 404 });
   }

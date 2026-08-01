@@ -8,9 +8,9 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import User from "../models/User";
-import Startup from "../models/Startup";
-import Post from "../models/Post";
+import User from "../src/models/User";
+import Startup from "../src/models/Startup";
+import Post from "../src/models/Post";
 
 const MONGODB_URI = process.env.MONGODB_URI;
 

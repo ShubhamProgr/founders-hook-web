@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   avatarUrl: string;
+  bio: string;
   
   onboardingAnswers: Map<string, any>; 
   
@@ -37,6 +38,12 @@ const UserSchema = new Schema<IUser>(
     avatarUrl: {
       type: String,
       default: "https://picsum.photos/seed/avatar/200/200",
+    },
+    bio: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 1200,
     },
     
     // Dynamic answers map

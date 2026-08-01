@@ -11,11 +11,9 @@ export async function GET() {
       name: user.name,
       username: user.username,
       avatarUrl: user.avatarUrl,
+      bio: user.bio || "",
+      onboardingAnswers: user.onboardingAnswers || {},
       onboardingComplete: user.onboardingComplete,
-      professionalStatus: user.professionalStatus,
-      techFields: user.techFields,
-      expertiseLevel: user.expertiseLevel,
-      lookingFor: user.lookingFor,
     },
   });
 }

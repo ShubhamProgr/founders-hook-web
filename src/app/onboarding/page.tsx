@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import BioChatbot from "@/components/BioChatbot"; // Ensure you created this from the previous step
+import BioChatbot from "@/components/BioChatbot";
 
 // 1. Updated Type to exactly match the MongoDB JSON we created
 type Question = {
@@ -24,7 +24,6 @@ export default function OnboardingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   
-  // New state to control the visibility of the Gemini chatbot
   const [showChatbot, setShowChatbot] = useState(false);
 
   useEffect(() => {
@@ -107,7 +106,6 @@ export default function OnboardingPage() {
         return;
       }
       
-      // Instead of pushing to /feed immediately, we trigger the chatbot
       setShowChatbot(true);
       
     } catch {
@@ -203,21 +201,22 @@ export default function OnboardingPage() {
               disabled={!canAdvance() || submitting}
               className="btn-gold disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {step === questions.length - 1 ? (submitting ? "Saving…" : "Finish") : "Continue"}
+              {step === questions.length - 1 ? (submitting ? "Saving..." : "Finish") : "Continue"}
               {step === questions.length - 1 ? <Check size={16} /> : <ArrowRight size={16} />}
             </button>
           </div>
         </div>
       </div>
       
-      {/* Render the chatbot if the questionnaire is complete */}
       {showChatbot && (
         <BioChatbot 
-          qaData={answers} 
+          qaData={questions.reduce<Record<string, string | string[]>>((acc, question) => {
+            acc[question.text] = answers[question._id];
+            return acc;
+          }, {})} 
           onClose={() => {
             setShowChatbot(false);
-            // Optionally route the user to the feed when they close the bot
-            router.push("/feed");
+            router.push("/profile");
             router.refresh();
           }} 
         />
