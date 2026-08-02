@@ -16,6 +16,10 @@ export interface IUser extends Document {
   // Waitlist and Early Access fields
   isEarlyAccess: boolean;
   vipCode?: string;
+
+  // Social graph
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
   
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +75,14 @@ const UserSchema = new Schema<IUser>(
       unique: true, 
       sparse: true // Allows this field to be null/omitted for future standard users without triggering unique constraint errors
     },
+
+    // Social graph
+    followers: [
+      { type: Schema.Types.ObjectId, ref: "User" }
+    ],
+    following: [
+      { type: Schema.Types.ObjectId, ref: "User" }
+    ],
   },
   { timestamps: true }
 );

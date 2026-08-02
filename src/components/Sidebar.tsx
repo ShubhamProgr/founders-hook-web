@@ -5,29 +5,19 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
-  Rss,
-  Users,
-  Rocket,
-  MessageSquare,
-  Bell,
-  Settings,
   ChevronDown,
   LogOut,
-  Plus,
   UserRound,
+  Users,
+  BookOpen,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import ProjectSetupModal from "./ProjectSetupModal"; // Ensure this path matches your file structure
 
 const NAV_ITEMS = [
   { label: "Home", icon: Home, href: "/feed" },
-  { label: "Feed", icon: Rss, href: "/feed" },
-  { label: "Founders", icon: Users, href: "/feed" },
-  { label: "Startups", icon: Rocket, href: "/feed" },
-  { label: "Messages", icon: MessageSquare, href: "/feed" },
   { label: "Profile", icon: UserRound, href: "/profile" },
-  { label: "Notifications", icon: Bell, href: "/feed" },
-  { label: "Settings", icon: Settings, href: "/feed" },
+  { label: "Founders", icon: Users, href: "/founders" },
+  { label: "Knowledge Hub", icon: BookOpen, href: "/knowledge-hub" },
 ];
 
 export default function Sidebar({
@@ -41,9 +31,6 @@ export default function Sidebar({
   // State for dropdown menu
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
-  // State for your new Project Setup Modal
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -62,8 +49,7 @@ export default function Sidebar({
   }
 
   return (
-    <>
-      <aside className="hidden w-[84px] flex-col items-center border-r border-white/5 bg-ink-950/90 py-6 lg:flex xl:w-56 xl:items-stretch xl:px-4">
+    <aside className="hidden w-[84px] flex-col items-center border-r border-white/5 bg-ink-950/90 py-6 lg:flex xl:w-56 xl:items-stretch xl:px-4">
         <Link href="/" className="mb-8 flex items-center gap-2 xl:px-2">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
             F
@@ -75,9 +61,7 @@ export default function Sidebar({
 
         <nav className="flex flex-1 flex-col gap-1">
           {NAV_ITEMS.map((item) => {
-            const active = item.href === pathname || (
-              (item.label === "Home" || item.label === "Feed") && pathname === "/feed"
-            );
+            const active = item.href === pathname;
             return (
               <Link
                 key={item.label}
@@ -94,17 +78,6 @@ export default function Sidebar({
             );
           })}
         </nav>
-
-        {/* CREATE STARTUP BUTTON */}
-        <div className="mt-4 px-2 xl:px-0">
-          <button
-            onClick={() => setIsSetupModalOpen(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-semibold text-black transition-all hover:bg-gray-200 active:scale-95 xl:py-2.5"
-          >
-            <Plus size={18} className="shrink-0" />
-            <span className="hidden xl:inline">Create Startup +</span>
-          </button>
-        </div>
 
         {/* USER PROFILE SECTION */}
         <div ref={menuRef} className="relative mt-4">
@@ -146,11 +119,5 @@ export default function Sidebar({
           )}
         </div>
       </aside>
-
-      {/* RENDER MODAL OUTSIDE OF THE SIDEBAR FLOW */}
-      {isSetupModalOpen && (
-        <ProjectSetupModal onClose={() => setIsSetupModalOpen(false)} />
-      )}
-    </>
   );
 }

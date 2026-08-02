@@ -1,12 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDays, FileText, Pencil, Sparkles, UserRound, Upload, Save, Loader2, Bot, X } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  Pencil,
+  UserRound,
+  Upload,
+  Save,
+  Loader2,
+  Bot,
+  X,
+  Rocket,
+  Users,
+} from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { CldUploadWidget } from "next-cloudinary";
+import StartupCard, { StartupDTO } from "@/components/StartupCard";
 
 // 1. ADD YOUR CUSTOM TEXT HERE
 const QUESTION_LABELS: Record<string, string> = {
@@ -35,9 +48,100 @@ function formatAnswer(value: unknown) {
   return String(value);
 }
 
+// ── Follow Stats Modal ──────────────────────────────────────────────────────
+interface FollowUser {
+  _id: string;
+  name: string;
+  username: string;
+  avatarUrl: string;
+}
+
+interface FollowModalProps {
+  type: "followers" | "following";
+  userId: string;
+  onClose: () => void;
+}
+
+function FollowModal({ type, userId, onClose }: FollowModalProps) {
+  const [users, setUsers] = useState<FollowUser[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchList() {
+      try {
+        const res = await fetch(`/api/follow/${userId}/list?type=${type}`);
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data.users || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch follow list:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchList();
+  }, [userId, type]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold capitalize text-white">
+            {type}
+          </h2>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-mist-400 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10 text-mist-400">
+            <Loader2 size={20} className="animate-spin" />
+          </div>
+        ) : users.length === 0 ? (
+          <p className="py-8 text-center text-sm text-mist-500">
+            {type === "followers" ? "No followers yet." : "Not following anyone yet."}
+          </p>
+        ) : (
+          <ul className="max-h-72 space-y-3 overflow-y-auto pr-1">
+            {users.map((u) => (
+              <li key={u._id} className="flex items-center gap-3">
+                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-white/10">
+                  <Image
+                    src={u.avatarUrl || "https://picsum.photos/seed/user/80/80"}
+                    alt={u.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-white">{u.name}</p>
+                  <p className="truncate text-xs text-mist-400">@{u.username}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Profile Page ────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const router = useRouter();
-  
+
   // State for user data and form
   const [user, setUser] = useState<any>(null);
   const [bio, setBio] = useState("");
@@ -45,6 +149,24 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [myStartups, setMyStartups] = useState<StartupDTO[]>([]);
+  const [startupsLoading, setStartupsLoading] = useState(true);
+
+  // Follow stats
+  const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
+  const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
+
+  const fetchFollowStats = useCallback(async (userId: string) => {
+    try {
+      const res = await fetch(`/api/follow/${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFollowStats({ followers: data.followers, following: data.following });
+      }
+    } catch (err) {
+      console.error("Failed to fetch follow stats:", err);
+    }
+  }, []);
 
   // Fetch user data on mount
   useEffect(() => {
@@ -60,6 +182,7 @@ export default function ProfilePage() {
           setUser(data.user);
           setBio(data.user.bio || "");
           setProfilePic(data.user.profilePic || data.user.avatarUrl || "");
+          fetchFollowStats(data.user._id || data.user.id);
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -68,7 +191,22 @@ export default function ProfilePage() {
       }
     }
     fetchUser();
-  }, [router]);
+
+    async function fetchMyStartups() {
+      try {
+        const res = await fetch("/api/profile/startups");
+        if (res.ok) {
+          const data = await res.json();
+          setMyStartups(data.startups || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch startups:", err);
+      } finally {
+        setStartupsLoading(false);
+      }
+    }
+    fetchMyStartups();
+  }, [router, fetchFollowStats]);
 
 // 1. Update your save function to pass the user ID
   const handleSaveProfile = async () => {
@@ -113,6 +251,8 @@ export default function ProfilePage() {
     username: user.username,
     avatarUrl: profilePic || user.avatarUrl,
   };
+
+  const userId = user._id || user.id;
 
   return (
     <div className="flex min-h-screen bg-ink-950">
@@ -178,10 +318,47 @@ export default function ProfilePage() {
                 </p>
                 <h1 className="font-display text-4xl font-semibold text-white">{user.name}</h1>
                 <p className="mt-1 text-sm text-mist-400">@{user.username}</p>
-                <p className="mt-3 flex items-center gap-2 text-sm text-mist-400">
-                  <CalendarDays size={15} />
-                  Joined {joinedDate}
-                </p>
+
+                {/* ── Follow stats ── */}
+                <div className="mt-3 flex items-center gap-5">
+                  <button
+                    onClick={() => setFollowModal("followers")}
+                    className="group flex flex-col items-start transition-colors hover:text-gold-300"
+                  >
+                    <span className="text-lg font-bold leading-none text-white group-hover:text-gold-300 transition-colors">
+                      {followStats.followers}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-mist-400">
+                      <Users size={11} />
+                      Followers
+                    </span>
+                  </button>
+
+                  <div className="h-8 w-px bg-white/10" />
+
+                  <button
+                    onClick={() => setFollowModal("following")}
+                    className="group flex flex-col items-start transition-colors hover:text-gold-300"
+                  >
+                    <span className="text-lg font-bold leading-none text-white group-hover:text-gold-300 transition-colors">
+                      {followStats.following}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-mist-400">
+                      <Users size={11} />
+                      Following
+                    </span>
+                  </button>
+
+                  <div className="h-8 w-px bg-white/10" />
+
+                  <div className="flex flex-col items-start">
+                    <span className="flex items-center gap-1 text-sm text-mist-400">
+                      <CalendarDays size={13} />
+                      {joinedDate}
+                    </span>
+                    <span className="text-xs text-mist-600">Joined</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -194,17 +371,7 @@ export default function ProfilePage() {
           {/* 2. GRID UPDATED HERE: lg:grid-cols-[minmax(0,1.5fr)_1fr] makes the right box smaller */}
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_1fr] gap-6 border-b border-white/10 pb-8">
             
-            <section className="rounded-2xl border border-white/10 bg-ink-900/75 p-6 shadow-card backdrop-blur h-full flex flex-col">
-              <div className="mb-5 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/10 text-gold-300">
-                  <Sparkles size={19} />
-                </span>
-                <div>
-                  <h2 className="font-display text-xl font-semibold text-white">Bio</h2>
-                  <p className="text-sm text-mist-500">Tell the community about yourself</p>
-                </div>
-              </div>
-
+            <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 backdrop-blur-xl h-full flex flex-col justify-between">
               {isEditingBio ? (
                 <div className="flex-1 flex flex-col gap-4">
                   <textarea
@@ -234,7 +401,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col justify-between">
                   <p className="flex-1 text-base leading-relaxed text-mist-200 whitespace-pre-wrap">
                     {bio || "You haven't written a bio yet. Tell the community what you are building!"}
                   </p>
@@ -295,8 +462,49 @@ export default function ProfilePage() {
             
           </div>
 
+          {/* ── My Projects Section ── */}
+          <section className="mt-10">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/10 text-gold-300">
+                <Rocket size={19} />
+              </span>
+              <div>
+                <h2 className="font-display text-xl font-semibold text-white">My Projects</h2>
+                <p className="text-sm text-mist-500">Startups you&apos;ve published</p>
+              </div>
+            </div>
+
+            {startupsLoading ? (
+              <div className="flex items-center gap-3 py-8 text-mist-400">
+                <Loader2 size={18} className="animate-spin" />
+                <span className="text-sm">Loading your projects…</span>
+              </div>
+            ) : myStartups.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-white/10 bg-ink-900/40 px-6 py-12 text-center">
+                <Rocket size={36} className="mx-auto mb-3 text-mist-600" />
+                <p className="text-base font-medium text-mist-300">No projects yet</p>
+                <p className="mt-1 text-sm text-mist-500">Publish your first startup from the feed page to see it here.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {myStartups.map((startup) => (
+                  <StartupCard key={startup._id} startup={startup} />
+                ))}
+              </div>
+            )}
+          </section>
+
         </section>
       </main>
+
+      {/* ── Follow Modal ── */}
+      {followModal && (
+        <FollowModal
+          type={followModal}
+          userId={userId}
+          onClose={() => setFollowModal(null)}
+        />
+      )}
     </div>
   );
 }

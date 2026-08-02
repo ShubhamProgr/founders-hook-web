@@ -4,18 +4,7 @@ import ProjectSetupModal from "@/components/ProjectSetupModal";
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import {
-  Search,
-  Bell,
-  Plus,
-  ChevronRight,
-  Home,
-  Rss,
-  Users,
-  Rocket,
-  MessageSquare,
-  MoreHorizontal,
-} from "lucide-react";
+import { Search, Bell, Plus, ChevronRight } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import StartupCard, { StartupDTO } from "@/components/StartupCard";
 import PostCard, { PostDTO } from "@/components/PostCard";
@@ -83,7 +72,7 @@ export default function FeedPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-ink-950/40 via-ink-950/80 to-ink-950" />
         </div>
 
-        <main className="relative z-10 mx-auto max-w-6xl px-6 pb-28 pt-8 lg:px-10">
+        <main className="relative z-10 mx-auto max-w-6xl px-6 pb-12 pt-8 lg:px-10">
           {/* HEADER */}
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -108,6 +97,12 @@ export default function FeedPage() {
                   ⌘K
                 </kbd>
               </div>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="btn-gold flex shrink-0 items-center gap-1.5 !px-4 !py-2.5 text-sm"
+              >
+                <Plus size={15} /> Create Startup
+              </button>
               <button className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-mist-300 hover:text-white">
                 <Bell size={18} />
                 <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-gold-400" />
@@ -125,9 +120,9 @@ export default function FeedPage() {
             </div>
 
             {loadingStartups ? (
-              <div className="flex gap-4 overflow-hidden">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-64 w-72 shrink-0 animate-pulse rounded-2xl bg-white/5" />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-white/5" />
                 ))}
               </div>
             ) : startups.length === 0 ? (
@@ -138,7 +133,7 @@ export default function FeedPage() {
                 onAction={() => setCreateOpen(true)}
               />
             ) : (
-              <div className="flex snap-x gap-4 overflow-x-auto pb-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {startups.map((s) => (
                   <StartupCard key={s._id} startup={s} />
                 ))}
@@ -173,45 +168,21 @@ export default function FeedPage() {
         </main>
       </div>
 
-      {/* MOBILE / BOTTOM BAR */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-center gap-1 border-t border-white/10 bg-ink-900/95 px-4 py-3 backdrop-blur lg:justify-center">
-        <BottomIcon icon={Home} label="Home" />
-        
-        {/* This is the + Create Startup button that triggers the state */}
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="btn-gold mx-2 !px-4 !py-2.5 text-xs"
-        >
-          <Plus size={15} /> Create Startup
-        </button>
-        
-        <BottomIcon icon={Rss} label="Feed" />
-        <BottomIcon icon={Users} label="Founders" />
-        <BottomIcon icon={Rocket} label="Startups" />
-        <BottomIcon icon={MessageSquare} label="Messages" />
-        <button className="hidden h-10 w-10 items-center justify-center rounded-xl text-mist-400 hover:text-white sm:flex">
-          <MoreHorizontal size={18} />
-        </button>
-      </div>
 
-      {/* RENDER THE NEW PROJECT SETUP MODAL HERE */}
+
       {createOpen && (
-        <ProjectSetupModal onClose={() => setCreateOpen(false)} />
+        <ProjectSetupModal
+          onClose={() => {
+            setCreateOpen(false);
+            loadStartups();
+          }}
+        />
       )}
     </div>
   );
 }
 
-function BottomIcon({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
-  return (
-    <button
-      className="flex h-10 w-10 flex-col items-center justify-center rounded-xl text-mist-400 transition-colors hover:text-white"
-      title={label}
-    >
-      <Icon size={18} />
-    </button>
-  );
-}
+
 
 function EmptyState({
   title,

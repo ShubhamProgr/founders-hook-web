@@ -4,6 +4,7 @@ export interface IOpenRole {
   title: string;
   type: "Internship" | "Full-time" | "Part-time";
   description: string;
+  paid: boolean;
 }
 
 export interface IStartup {
@@ -30,6 +31,7 @@ const OpenRoleSchema = new Schema<IOpenRole>(
       default: "Internship",
     },
     description: { type: String, default: "" },
+    paid: { type: Boolean, default: false },
   },
   { _id: true }
 );

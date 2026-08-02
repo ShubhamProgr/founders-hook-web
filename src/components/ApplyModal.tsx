@@ -82,8 +82,8 @@ export default function ApplyModal({
                 onChange={(e) => setRoleId(e.target.value)}
                 className="field-input"
               >
-                {startup.openRoles.map((r) => (
-                  <option key={r._id} value={r._id} className="bg-ink-900">
+                {startup.openRoles.map((r, idx) => (
+                  <option key={r._id || `role-${idx}`} value={r._id || `role-${idx}`} className="bg-ink-900">
                     {r.title} · {r.type}
                   </option>
                 ))}

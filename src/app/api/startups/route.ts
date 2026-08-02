@@ -36,6 +36,7 @@ const OpenRoleInput = z.object({
   title: z.string().min(2),
   type: z.enum(["Internship", "Full-time", "Part-time"]).default("Internship"),
   description: z.string().optional().default(""),
+  paid: z.boolean().optional().default(false),
 });
 
 const CreateStartupSchema = z.object({
@@ -44,6 +45,8 @@ const CreateStartupSchema = z.object({
   description: z.string().max(1000).optional().default(""),
   category: z.string().min(2),
   icon: z.string().optional().default("🚀"),
+  logoUrl: z.string().optional().default(""),
+  bannerUrl: z.string().optional().default(""),
   openRoles: z.array(OpenRoleInput).optional().default([]),
 });
 
@@ -66,11 +69,15 @@ export async function POST(req: NextRequest) {
 
   await connectToDatabase();
 
+  const fallbackCover = `https://picsum.photos/seed/${encodeURIComponent(parsed.data.name)}/800/500`;
+
   const startup = await Startup.create({
     ...parsed.data,
     founder: session.userId,
     members: [session.userId],
-    coverImage: `https://picsum.photos/seed/${encodeURIComponent(parsed.data.name)}/800/500`,
+    // Use uploaded Cloudinary URL if provided, else picsum placeholder
+    icon: parsed.data.logoUrl || "🚀",
+    coverImage: parsed.data.bannerUrl || fallbackCover,
   });
 
   return NextResponse.json({ startup }, { status: 201 });
