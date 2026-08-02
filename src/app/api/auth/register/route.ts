@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import crypto from "crypto";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import { signSession, SESSION_COOKIE } from "@/lib/auth";
@@ -15,6 +16,13 @@ const RegisterSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
+
+// Helper function to generate a unique, readable VIP code
+function generateVipCode(username: string) {
+  const prefix = username.substring(0, 4).toUpperCase();
+  const randomString = crypto.randomBytes(3).toString("hex").toUpperCase();
+  return `EARLY-${prefix}-${randomString}`;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,12 +48,18 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    
+    // Generate the VIP code for the new early-access user
+    const vipCode = generateVipCode(username);
+
     const newUser = await User.create({
       name,
       username: username.toLowerCase(),
       email: email.toLowerCase(),
       passwordHash,
       avatarUrl: `https://picsum.photos/seed/${encodeURIComponent(username)}/200/200`,
+      isEarlyAccess: true,
+      vipCode,
     });
 
     const token = signSession({ 
@@ -59,7 +73,9 @@ export async function POST(req: NextRequest) {
           id: newUser._id.toString(),
           name: newUser.name,
           username: newUser.username,
+          email: newUser.email,
           onboardingComplete: newUser.onboardingComplete,
+          vipCode: newUser.vipCode, // Pass this back to display on the waitlist success page
         },
       },
       { status: 201 }

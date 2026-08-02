@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, models, model } from "mongoose";
+
 // User interface extending Mongoose Document
 export interface IUser extends Document {
   name: string;
@@ -11,6 +12,11 @@ export interface IUser extends Document {
   onboardingAnswers: Map<string, any>; 
   
   onboardingComplete: boolean;
+  
+  // Waitlist and Early Access fields
+  isEarlyAccess: boolean;
+  vipCode?: string;
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +60,17 @@ const UserSchema = new Schema<IUser>(
     },
     
     onboardingComplete: { type: Boolean, default: false },
+    
+    // Waitlist / Early Access fields
+    isEarlyAccess: { 
+      type: Boolean, 
+      default: true // Defaults to true while you are in the waitlist phase
+    },
+    vipCode: { 
+      type: String, 
+      unique: true, 
+      sparse: true // Allows this field to be null/omitted for future standard users without triggering unique constraint errors
+    },
   },
   { timestamps: true }
 );

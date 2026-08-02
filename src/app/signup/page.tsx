@@ -38,7 +38,7 @@ export default function SignupPage() {
         return;
       }
       
-      // Use Next.js router for smooth client-side navigation without a full page refresh
+      // Navigate to onboarding to complete the waitlist application
       router.push("/onboarding");
       
     } catch {
@@ -71,16 +71,17 @@ export default function SignupPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
             F
           </span>
-          <span className="font-display text-lg font-semibold tracking-wide">
+          <span className="font-display text-lg font-semibold tracking-wide text-white">
             FOUNDERS HOOK
           </span>
         </Link>
 
+        {/* Updated Text for Waitlist Context */}
         <h1 className="font-display text-2xl font-semibold text-white">
-          Join the community
+          Join the Early Access Waitlist
         </h1>
         <p className="mt-1.5 text-sm text-mist-400">
-          Create your account — next we&apos;ll get to know you a little.
+          Secure your spot and unlock VIP benefits. Next, we&apos;ll get to know you a little.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
@@ -92,7 +93,7 @@ export default function SignupPage() {
                 required
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
-                placeholder="Shivang Verma"
+                placeholder="john doe"
                 className="field-input pl-11"
               />
             </div>
@@ -106,7 +107,7 @@ export default function SignupPage() {
                 required
                 value={form.username}
                 onChange={(e) => update("username", e.target.value.replace(/\s/g, ""))}
-                placeholder="shivangv"
+                placeholder="johndoe"
                 className="field-input pl-11"
               />
             </div>
@@ -121,7 +122,7 @@ export default function SignupPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
-                placeholder="you@college.edu"
+                placeholder="your@email.com"
                 className="field-input pl-11"
               />
             </div>
@@ -149,8 +150,8 @@ export default function SignupPage() {
             </p>
           )}
 
-          <button type="submit" disabled={loading} className="btn-gold w-full justify-center disabled:opacity-60">
-            {loading ? "Creating account…" : "Continue"}
+          <button type="submit" disabled={loading} className="btn-gold w-full justify-center disabled:opacity-60 mt-2">
+            {loading ? "Securing Spot…" : "Continue"}
             {!loading && <ArrowRight size={16} />}
           </button>
         </form>

@@ -33,14 +33,19 @@ export async function POST(req: NextRequest) {
         onboardingAnswers: parsed.data, 
         onboardingComplete: true 
       },
-      { new: true }
+      { new: true } // Returns the updated document
     );
 
     if (!updated) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ ok: true });
+    // Pass the email and vipCode back to the client for the waitlist success screen
+    return NextResponse.json({ 
+      ok: true,
+      email: updated.email,
+      vipCode: updated.vipCode
+    });
     
   } catch (error) {
     console.error("Onboarding submission error:", error);
