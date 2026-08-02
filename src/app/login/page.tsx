@@ -29,8 +29,8 @@ export default function LoginPage() {
         setError(data.error || "Couldn't log you in");
         return;
       }
-      router.push(data.user.onboardingComplete ? "/feed" : "/onboarding");
-      router.refresh();
+      const target = data.user.onboardingComplete ? "/feed" : "/onboarding";
+      window.location.href = target;
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="yourname or you@college.edu"
+                placeholder="your@email.com or username"
                 className="field-input pl-11"
               />
             </div>
