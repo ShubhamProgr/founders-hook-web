@@ -103,13 +103,7 @@ export default function OnboardingPage() {
         return;
       }
       
-      // Changed: Redirect to the waitlist success page instead of /feed, passing the required data
-      if (data.email && data.vipCode) {
-        router.push(`/waitlist-success?email=${encodeURIComponent(data.email)}&vipCode=${encodeURIComponent(data.vipCode)}`);
-      } else {
-        // Fallback if data is missing for some reason
-        router.push('/waitlist-success');
-      }
+      router.push('/waitlist-success');
       
     } catch {
       setError("Network error. Please try again.");

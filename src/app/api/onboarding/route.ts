@@ -40,12 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Pass the email and vipCode back to the client for the waitlist success screen
-    return NextResponse.json({ 
-      ok: true,
-      email: updated.email,
-      vipCode: updated.vipCode
-    });
+    return NextResponse.json({ ok: true });
     
   } catch (error) {
     console.error("Onboarding submission error:", error);

@@ -1,18 +1,17 @@
 import { redirect } from "next/navigation";
 import { Check } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 
-interface PageProps {
-  searchParams: Promise<{
-    email?: string;
-    vipCode?: string;
-  }>;
-}
-
-export default async function WaitlistSuccessPage({ searchParams }: PageProps) {
-  const resolvedParams = await searchParams;
-  const email = resolvedParams.email;
-  const vipCode = resolvedParams.vipCode;
+export default async function WaitlistSuccessPage() {
+  const user = await getCurrentUser();
   
+  if (!user) {
+    redirect("/onboarding");
+  }
+
+  const email = user.email;
+  const vipCode = user.vipCode;
+
   if (!email || !vipCode) {
     redirect("/onboarding");
   }

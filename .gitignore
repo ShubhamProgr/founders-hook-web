@@ -2,3 +2,7 @@ node_modules
 .next
 .env
 .DS_Store
+dev-server-network.err.log
+dev-server-network.out.log
+dev-server.err.log
+dev-server.out.log
