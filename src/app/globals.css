@@ -55,6 +55,21 @@ body {
   .chip-active {
     @apply border-gold-400/70 bg-gold-400/10 text-gold-200;
   }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -10,6 +10,7 @@ import {
   UserRound,
   Users,
   BookOpen,
+  Network,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { label: "Home", icon: Home, href: "/feed" },
   { label: "Profile", icon: UserRound, href: "/profile" },
   { label: "Founders", icon: Users, href: "/founders" },
+  { label: "Networking", icon: Network, href: "/networking" },
   { label: "Knowledge Hub", icon: BookOpen, href: "/knowledge-hub" },
 ];
 

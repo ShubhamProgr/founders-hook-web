@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Users, Search, Rocket, CalendarDays, Loader2, UserPlus, UserCheck } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import StartupDetailModal from "@/components/StartupDetailModal";
@@ -30,6 +31,7 @@ interface Founder {
 }
 
 export default function FoundersPage() {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [founders, setFounders] = useState<Founder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -201,16 +203,22 @@ export default function FoundersPage() {
                     <div>
                       {/* Profile Info */}
                       <div className="flex items-start gap-4">
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/15">
+                        <button
+                          onClick={() => router.push(`/users/${founder._id}`)}
+                          className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/15 transition-transform hover:scale-105"
+                        >
                           <Image
                             src={founder.avatarUrl || "https://picsum.photos/seed/user/120/120"}
                             alt={founder.name}
                             fill
                             className="object-cover"
                           />
-                        </div>
+                        </button>
                         <div className="min-w-0 flex-1">
-                          <h3 className="truncate font-display text-lg font-semibold text-white">
+                          <h3
+                            onClick={() => router.push(`/users/${founder._id}`)}
+                            className="truncate cursor-pointer font-display text-lg font-semibold text-white hover:text-gold-200 transition-colors"
+                          >
                             {founder.name}
                           </h3>
                           <p className="truncate text-xs text-mist-400">@{founder.username}</p>

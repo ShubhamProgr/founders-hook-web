@@ -16,6 +16,7 @@ import {
   X,
   Rocket,
   Users,
+  ChevronRight,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { CldUploadWidget } from "next-cloudinary";
@@ -59,28 +60,21 @@ interface FollowUser {
 interface FollowModalProps {
   type: "followers" | "following";
   userId: string;
+  currentUserId: string | null;
   onClose: () => void;
 }
 
 function FollowModal({ type, userId, onClose }: FollowModalProps) {
+  const router = useRouter();
   const [users, setUsers] = useState<FollowUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchList() {
-      try {
-        const res = await fetch(`/api/follow/${userId}/list?type=${type}`);
-        if (res.ok) {
-          const data = await res.json();
-          setUsers(data.users || []);
-        }
-      } catch (err) {
-        console.error("Failed to fetch follow list:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchList();
+    fetch(`/api/follow/${userId}/list?type=${type}`)
+      .then((r) => r.json())
+      .then((d) => setUsers(d.users || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [userId, type]);
 
   return (
@@ -92,11 +86,8 @@ function FollowModal({ type, userId, onClose }: FollowModalProps) {
         className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold capitalize text-white">
-            {type}
-          </h2>
+          <h2 className="font-display text-lg font-semibold capitalize text-white">{type}</h2>
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-mist-400 transition-colors hover:bg-white/5 hover:text-white"
@@ -107,28 +98,34 @@ function FollowModal({ type, userId, onClose }: FollowModalProps) {
 
         {loading ? (
           <div className="flex items-center justify-center py-10 text-mist-400">
-            <Loader2 size={20} className="animate-spin" />
+            <Loader2 size={20} className="animate-spin text-gold-400" />
           </div>
         ) : users.length === 0 ? (
           <p className="py-8 text-center text-sm text-mist-500">
             {type === "followers" ? "No followers yet." : "Not following anyone yet."}
           </p>
         ) : (
-          <ul className="max-h-72 space-y-3 overflow-y-auto pr-1">
+          <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
             {users.map((u) => (
-              <li key={u._id} className="flex items-center gap-3">
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-white/10">
-                  <Image
-                    src={u.avatarUrl || "https://picsum.photos/seed/user/80/80"}
-                    alt={u.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">{u.name}</p>
-                  <p className="truncate text-xs text-mist-400">@{u.username}</p>
-                </div>
+              <li key={u._id}>
+                <button
+                  onClick={() => { onClose(); router.push(`/users/${u._id}`); }}
+                  className="group flex w-full items-center gap-3 rounded-xl border border-transparent p-2 text-left transition-all hover:border-white/8 hover:bg-white/[0.04]"
+                >
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-white/10">
+                    <Image
+                      src={u.avatarUrl || "https://picsum.photos/seed/user/80/80"}
+                      alt={u.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-white">{u.name}</p>
+                    <p className="truncate text-xs text-mist-400">@{u.username}</p>
+                  </div>
+                  <ChevronRight size={14} className="shrink-0 text-mist-600 group-hover:text-gold-400 transition-colors" />
+                </button>
               </li>
             ))}
           </ul>
@@ -502,6 +499,7 @@ export default function ProfilePage() {
         <FollowModal
           type={followModal}
           userId={userId}
+          currentUserId={userId}
           onClose={() => setFollowModal(null)}
         />
       )}
