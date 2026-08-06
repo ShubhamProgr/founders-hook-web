@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth-edge"; 
-import { SESSION_COOKIE } from "@/lib/auth-constants"; 
+import { verifySession } from "@/lib/auth-edge";
+import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 // Added /feed to the protected routes array
 const PROTECTED = ["/onboarding", "/dashboard", "/waitlist-success", "/feed"];
 
 // Define who gets to bypass the waitlist and see the app
 // Replace these with the exact username(s) you register with
-const ADMIN_USERNAMES = ["shubham", "shivangv", "aaravm", "ishitav", "kabirs", "liamp"];
+const ADMIN_USERNAMES = ["shubham", "adwait"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -16,7 +16,7 @@ export async function middleware(req: NextRequest) {
   if (!isProtected) return NextResponse.next();
 
   const token = req.cookies.get(SESSION_COOKIE)?.value;
-  const session = token ? await verifySession(token) : null; 
+  const session = token ? await verifySession(token) : null;
 
   if (!session) {
     const loginUrl = new URL("/login", req.url);
@@ -40,9 +40,9 @@ export async function middleware(req: NextRequest) {
 export const config = {
   // Ensure /feed is included in the matcher
   matcher: [
-    "/onboarding/:path*", 
-    "/dashboard/:path*", 
-    "/waitlist-success/:path*", 
+    "/onboarding/:path*",
+    "/dashboard/:path*",
+    "/waitlist-success/:path*",
     "/feed/:path*"
   ],
 };
