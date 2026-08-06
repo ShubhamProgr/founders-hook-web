@@ -53,9 +53,7 @@ export default function Sidebar({
   return (
     <aside className="hidden w-[84px] flex-col items-center border-r border-white/5 bg-ink-950/90 py-6 lg:flex xl:w-56 xl:items-stretch xl:px-4">
         <Link href="/" className="mb-8 flex items-center gap-2 xl:px-2">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
-            F
-          </span>
+          <Image src="https://res.cloudinary.com/t7efuhnd/image/upload/v1786022235/founder_hook_iorswv.jpg" alt="Founders Hook Logo" width={36} height={36} className="rounded-lg object-cover" />
           <span className="hidden font-display text-sm font-semibold tracking-wide xl:inline">
             FOUNDERS HOOK
           </span>

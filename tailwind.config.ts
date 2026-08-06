@@ -18,14 +18,14 @@ const config: Config = {
           600: "#2c313b",
         },
         gold: {
-          50: "#fbf3e2",
-          100: "#f5e4bd",
-          200: "#eccd85",
-          300: "#e2b458",
-          400: "#d4a054",
-          500: "#c48f3d",
-          600: "#a97527",
-          700: "#8a5d20",
+          50: "#fafafa",
+          100: "#f4f4f5",
+          200: "#e4e4e7",
+          300: "#d4d4d8",
+          400: "#a1a1aa",
+          500: "#71717a",
+          600: "#52525b",
+          700: "#3f3f46",
         },
         mist: {
           100: "#f5f6f7",
@@ -39,11 +39,11 @@ const config: Config = {
         sans: ["var(--font-sans)", "sans-serif"],
       },
       backgroundImage: {
-        "gold-gradient": "linear-gradient(135deg, #eccd85 0%, #d4a054 45%, #a97527 100%)",
+        "gold-gradient": "linear-gradient(135deg, #ffffff 0%, #e4e4e7 45%, #a1a1aa 100%)",
         "ink-radial": "radial-gradient(120% 120% at 10% 0%, #161920 0%, #0c0d10 55%, #08090b 100%)",
       },
       boxShadow: {
-        gold: "0 8px 30px -8px rgba(212, 160, 84, 0.45)",
+        gold: "0 8px 30px -8px rgba(255, 255, 255, 0.45)",
         card: "0 1px 0 rgba(255,255,255,0.04), 0 12px 30px -12px rgba(0,0,0,0.6)",
       },
       keyframes: {

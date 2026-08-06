@@ -11,7 +11,7 @@ body {
 }
 
 ::selection {
-  background: rgba(212, 160, 84, 0.35);
+  background: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
@@ -28,7 +28,7 @@ body {
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a97527;
+  background: #52525b;
 }
 
 @layer components {

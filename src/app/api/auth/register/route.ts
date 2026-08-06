@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       avatarUrl: `https://picsum.photos/seed/${encodeURIComponent(username)}/200/200`,
       isEarlyAccess: true,
       vipCode,
+      emailVerified: true, // Auto-verify since we are skipping OTP
     });
 
     const token = signSession({ 
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
           username: newUser.username,
           email: newUser.email,
           onboardingComplete: newUser.onboardingComplete,
-          vipCode: newUser.vipCode, // Pass this back to display on the waitlist success page
+          vipCode: newUser.vipCode,
         },
       },
       { status: 201 }

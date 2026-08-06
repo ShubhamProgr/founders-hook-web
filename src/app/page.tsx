@@ -12,6 +12,9 @@ import {
   Handshake,
   Sparkles,
   TrendingUp,
+  MessageSquare,
+  Globe,
+  BookOpen,
 } from "lucide-react";
 
 type Stats = { founders: number; startups: number; openRoles: number };
@@ -73,16 +76,14 @@ export default function LandingPage() {
   const primaryLabel = loggedIn ? "Go to Feed" : "Join the Community";
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-ink-radial">
+    <main className="relative min-h-screen w-full overflow-x-hidden bg-ink-radial">
       {/* ambient glow */}
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[560px] w-[900px] -translate-x-1/2 rounded-full bg-gold-500/10 blur-[120px]" />
 
       {/* NAVBAR */}
       <header className="relative z-20 flex w-full items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
-            F
-          </span>
+          <Image src="https://res.cloudinary.com/t7efuhnd/image/upload/v1786022235/founder_hook_iorswv.jpg" alt="Founders Hook Logo" width={36} height={36} className="rounded-lg object-cover" />
           <span className="font-display text-lg font-semibold tracking-wide">
             FOUNDERS HOOK
           </span>
@@ -203,6 +204,194 @@ export default function LandingPage() {
               <p className="text-sm leading-relaxed text-mist-400">{f.desc}</p>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* NETWORKING SECTION */}
+      <section className="relative z-10 w-full border-y border-white/10 bg-ink-950 py-24">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-400/10 text-gold-300">
+                <Globe size={28} />
+              </div>
+              <h2 className="font-display text-3xl font-semibold sm:text-4xl text-white">
+                The Network for the Next Generation
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-mist-400">
+                Connect with passionate student founders from campuses around the world. 
+                Whether you're looking for a technical co-founder to build your MVP or 
+                a marketing wiz to launch your product, our networking tools make it 
+                effortless to find the right people for your startup journey.
+              </p>
+              <ul className="mt-8 space-y-4">
+                {[
+                  "Discover founders by campus, major, or skill set.",
+                  "Filter startups by industry and funding stage.",
+                  "Join localized communities and special interest groups.",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-mist-300">
+                    <div className="h-1.5 w-1.5 rounded-full bg-gold-400" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="relative aspect-square max-h-[500px] w-full overflow-hidden rounded-2xl border border-white/10 lg:h-[500px]"
+            >
+              <Image
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=800"
+                alt="Students networking"
+                fill
+                className="object-cover grayscale transition-transform duration-700 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-ink-950/20 mix-blend-multiply" />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* FOUNDERS INTERACTION SECTION */}
+      <section className="relative z-10 w-full bg-ink-900 py-24">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="order-2 relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-white/10 lg:order-1 lg:h-[500px]"
+            >
+              <Image
+                src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800"
+                alt="Founders discussing ideas"
+                fill
+                className="object-cover grayscale transition-transform duration-700 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-tr from-ink-950/80 to-transparent" />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="order-1 lg:order-2"
+            >
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold-400/10 text-gold-300">
+                <MessageSquare size={28} />
+              </div>
+              <h2 className="font-display text-3xl font-semibold sm:text-4xl text-white">
+                Meaningful Interactions
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-mist-400">
+                Stop shouting into the void. Founders Hook provides dedicated spaces 
+                to discuss ideas, ask for feedback, and form partnerships. It's a 
+                community that actually cares about what you're building.
+              </p>
+              <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/5 bg-white/5 p-5">
+                  <h4 className="font-display font-medium text-white">Direct Messaging</h4>
+                  <p className="mt-2 text-sm text-mist-500">Reach out directly to potential co-founders and team members securely.</p>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-white/5 p-5">
+                  <h4 className="font-display font-medium text-white">Project Feeds</h4>
+                  <p className="mt-2 text-sm text-mist-500">Share your progress, post updates, and get constructive feedback from peers.</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* KNOWLEDGE HUB SECTION */}
+      <section className="relative z-10 w-full border-t border-white/10 bg-ink-950 py-24 pb-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gold-400/10 text-gold-300">
+                <BookOpen size={32} />
+              </div>
+              <h2 className="font-display text-3xl font-semibold sm:text-4xl text-white">
+                The Founders Knowledge Hub
+              </h2>
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-mist-400">
+                Building a startup is hard. We provide the resources you need to 
+                navigate the journey from idea to execution. Access guides, templates, 
+                and case studies tailored for student entrepreneurs.
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Startup Playbooks",
+                desc: "Step-by-step guides from ideation to seed round.",
+                img: "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80&w=800"
+              },
+              {
+                title: "Pitch Templates",
+                desc: "Winning pitch deck structures used by successful founders.",
+                img: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=800"
+              },
+              {
+                title: "Legal & Equity",
+                desc: "Understand term sheets, vesting, and founder agreements.",
+                img: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=800"
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.6, delay: i * 0.15 }}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-colors hover:border-white/20"
+              >
+                <div className="relative h-48 w-full overflow-hidden">
+                  <Image
+                    src={item.img}
+                    alt={item.title}
+                    fill
+                    className="object-cover grayscale transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-ink-950/40 mix-blend-multiply" />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-display text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm text-mist-400">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-16 flex justify-center"
+          >
+            <Link href={primaryHref} className="btn-gold !px-8 !py-3">
+              Explore Resources
+              <ArrowRight size={18} />
+            </Link>
+          </motion.div>
         </div>
       </section>
 

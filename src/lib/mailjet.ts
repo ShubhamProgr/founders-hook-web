@@ -1,0 +1,145 @@
+/**
+ * Mailjet transactional email service.
+ * Uses the REST API directly — no SDK needed.
+ */
+
+const MAILJET_API_URL = "https://api.mailjet.com/v3.1/send";
+
+interface SendOtpEmailOptions {
+  to: string;
+  otp: string;
+}
+
+function buildOtpEmailHtml(otp: string): string {
+  const digits = otp.split("").join("</span><span style=\"display:inline-block;width:48px;height:56px;line-height:56px;text-align:center;font-size:28px;font-weight:700;background:#1a1c23;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;color:#d4d4d8;margin:0 4px;font-family:monospace\">");
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Founders Hook Verification Code</title>
+</head>
+<body style="margin:0;padding:0;background:#0c0d10;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0c0d10;min-height:100vh">
+    <tr>
+      <td align="center" style="padding:48px 16px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#13141a;border-radius:20px;border:1px solid rgba(255,255,255,0.08);overflow:hidden">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding:36px 40px 24px;text-align:center;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 70%)">
+              <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:8px">
+                <img src="https://res.cloudinary.com/t7efuhnd/image/upload/v1786022235/founder_hook_iorswv.jpg" width="36" height="36" style="border-radius:8px;object-fit:cover;" alt="Logo" />
+                <span style="font-size:16px;font-weight:700;color:#fff;letter-spacing:0.06em">FOUNDERS HOOK</span>
+              </div>
+              <div style="width:48px;height:2px;background:linear-gradient(90deg,transparent,#d4d4d8,transparent);margin:16px auto 0"></div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:8px 40px 40px">
+              <h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 8px;text-align:center">Verify your email</h1>
+              <p style="font-size:14px;color:#8b95a3;text-align:center;margin:0 0 32px;line-height:1.6">
+                Use the verification code below to confirm your email address and complete your signup.
+              </p>
+
+              <!-- OTP Digits -->
+              <div style="text-align:center;margin-bottom:32px">
+                <span style="display:inline-block;width:48px;height:56px;line-height:56px;text-align:center;font-size:28px;font-weight:700;background:#1a1c23;border:1.5px solid rgba(255,255,255,0.3);border-radius:10px;color:#d4d4d8;margin:0 4px;font-family:monospace">${digits}</span>
+              </div>
+
+              <!-- Expiry notice -->
+              <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:14px 18px;margin-bottom:28px;text-align:center">
+                <p style="font-size:13px;color:#d4d4d8;margin:0">
+                  This code expires in <strong>15 minutes</strong>
+                </p>
+              </div>
+
+              <p style="font-size:13px;color:#4a5260;text-align:center;margin:0;line-height:1.6">
+                If you didn't create a Founders Hook account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:20px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center">
+              <p style="font-size:12px;color:#3d4450;margin:0">
+                © ${new Date().getFullYear()} Founders Hook · All rights reserved
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+export async function sendOtpEmail({ to, otp }: SendOtpEmailOptions): Promise<void> {
+  const apiKey = process.env.MAILJET_API_KEY;
+  const apiSecret = process.env.MAILJET_API_SECRET;
+  const senderEmail = process.env.MAILJET_SENDER_EMAIL || "noreply@foundershook.com";
+  const senderName = process.env.MAILJET_SENDER_NAME || "Founders Hook";
+
+  if (!apiKey || !apiSecret || apiKey === "your-mailjet-api-key-here") {
+    // In development without a real key, just log the OTP
+    console.log(`[OTP DEV MODE] Code for ${to}: ${otp}`);
+    return;
+  }
+
+  const payload = {
+    Messages: [
+      {
+        From: {
+          Email: senderEmail,
+          Name: senderName,
+        },
+        To: [
+          {
+            Email: to,
+          },
+        ],
+        Subject: `${otp} is your Founders Hook verification code`,
+        TextPart: `Your Founders Hook verification code is: ${otp}\n\nThis code expires in 15 minutes.\n\nIf you didn't sign up, ignore this email.`,
+        HTMLPart: buildOtpEmailHtml(otp),
+      },
+    ],
+  };
+
+  const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+
+  try {
+    const res = await fetch(MAILJET_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${auth}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      console.error("Mailjet API error:", res.status, errorBody);
+
+      if (process.env.NODE_ENV !== "production" || res.status === 401 || res.status === 403) {
+        console.warn(`[OTP FALLBACK DEV MODE] Mailjet email failed (${res.status}). OTP for ${to}: ${otp}`);
+        return;
+      }
+
+      throw new Error(`Failed to send verification email (Mailjet ${res.status})`);
+    }
+  } catch (err: any) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(`[OTP FALLBACK DEV MODE] Could not send email via Mailjet: ${err?.message || err}. OTP for ${to}: ${otp}`);
+      return;
+    }
+    throw err;
+  }
+}

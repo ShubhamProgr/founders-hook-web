@@ -68,9 +68,7 @@ export default function SignupPage() {
         className="relative z-10 w-full max-w-md rounded-3xl border border-white/10 bg-ink-900/80 p-8 shadow-card backdrop-blur-xl sm:p-10"
       >
         <Link href="/" className="mb-8 flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-gradient font-display text-lg font-bold text-ink-950">
-            F
-          </span>
+          <Image src="https://res.cloudinary.com/t7efuhnd/image/upload/v1786022235/founder_hook_iorswv.jpg" alt="Founders Hook Logo" width={36} height={36} className="rounded-lg object-cover" />
           <span className="font-display text-lg font-semibold tracking-wide text-white">
             FOUNDERS HOOK
           </span>
