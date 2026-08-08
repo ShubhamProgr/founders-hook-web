@@ -7,7 +7,7 @@ const PROTECTED = ["/onboarding", "/dashboard", "/waitlist-success", "/feed"];
 
 // Define who gets to bypass the waitlist and see the app
 // Replace these with the exact username(s) you register with
-const ADMIN_USERNAMES = ["shubham", "adwait"];
+const ADMIN_USERNAMES = ["shubham", "adwait","saraswat"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
